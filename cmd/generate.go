@@ -33,6 +33,13 @@ to quickly create a Cobra application.`,
 			return
 		}
 
+		excludeServices, err := cmd.Flags().GetStringSlice("exclude-services")
+
+		if len(services) >0 && len(excludeServices) >0 {
+			fmt.Println("Please do not use --exclude-services and --services simultaneously")
+			return
+		}
+
 		sections := []section{}
 
 		for _, section := range allSections {
@@ -50,6 +57,7 @@ func init() {
 	rootCmd.AddCommand(generateCmd)
 
 	generateCmd.Flags().StringSliceP("services", "s", []string{}, "list of services to include (can be comma separated (default: ALL))")
+	generateCmd.Flags().StringSliceP("exclude-services", "e", []string{}, "list of services to exclude (can be comma separated)")
 }
 
 func getAllSections()[]section{
