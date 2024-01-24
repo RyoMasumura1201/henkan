@@ -40,11 +40,24 @@ to quickly create a Cobra application.`,
 			return
 		}
 
+		var includeExclude []string
+
+		if len(excludeServices) >0 {
+			includeExclude = excludeServices
+		} else if len(services) >0{
+			includeExclude = services
+		}
+
 		sections := []section{}
 
-		for _, section := range allSections {
-			if (slices.Contains(services, section.service)){
-				sections = append(sections, section)
+		if len(includeExclude) >0 {
+			for _, section := range allSections {
+				if (len(services) >0 && slices.Contains(services, section.service)){
+					sections = append(sections, section)
+				}
+				if (len(excludeServices) >0 && !slices.Contains(excludeServices, section.service)){
+					sections = append(sections, section)
+				}
 			}
 		}
 
