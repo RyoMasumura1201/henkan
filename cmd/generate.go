@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -19,6 +20,23 @@ type Section struct {
 	service string
 }
 
+type ServerResponse struct {
+	From int `json:"From"`
+	Count int `json:"Count"`
+	Total int `json:"Total"`
+	Servers []Server `json:"Servers"`
+	IsOK bool `json:"is_ok"`
+}
+
+type Server struct {
+	Name string `json:"Name"`
+	ServerPlan ServerPlan `json:"ServerPlan"`
+}
+
+type ServerPlan struct {
+	CPU int `json:"CPU"`
+	MemoryMB int `json:"MemoryMB"`
+}
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -123,5 +141,11 @@ func updateDatatableServer(){
 		return
 	}
 
-	fmt.Println(string(body))
+	var serverResponse ServerResponse
+	if err := json.Unmarshal(body, &serverResponse); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(serverResponse.Servers[0].Name)
 }
