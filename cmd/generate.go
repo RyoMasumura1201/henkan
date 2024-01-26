@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type section struct {
+type Section struct {
 	service string
 }
 
@@ -65,14 +65,14 @@ func init() {
 	generateCmd.Flags().StringSliceP("exclude-services", "e", []string{}, "list of services to exclude (can be comma separated)")
 }
 
-func getAllSections()[]section{
-	sections := []section{}
-	sections = append(sections, section{"Server"}, section{"Disk"}, section{"Switch"})
+func getAllSections()[]Section{
+	sections := []Section{}
+	sections = append(sections, Section{"Server"}, Section{"Disk"}, Section{"Switch"})
 	return sections
 }
 
-func filterSections(services []string, excludeServices []string)([]section, error){
-	sections := []section{}
+func filterSections(services []string, excludeServices []string)([]Section, error){
+	sections := []Section{}
 	allSections := getAllSections()
 
 	if len(services) >0 && len(excludeServices) >0 {
