@@ -4,8 +4,13 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +31,6 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("generate called")
-		allSections := getAllSections()
 		services, err := cmd.Flags().GetStringSlice("services")
 		if err != nil {
 			fmt.Println("Error retrieving services:", err)
@@ -35,34 +39,22 @@ to quickly create a Cobra application.`,
 
 		excludeServices, err := cmd.Flags().GetStringSlice("exclude-services")
 
-		if len(services) >0 && len(excludeServices) >0 {
-			fmt.Println("Please do not use --exclude-services and --services simultaneously")
+		if err != nil {
+			fmt.Println("Error retrieving exclude services:", err)
 			return
 		}
 
-		var includeExclude []string
+		sections, err := filterSections(services, excludeServices)
 
-		if len(excludeServices) >0 {
-			includeExclude = excludeServices
-		} else if len(services) >0{
-			includeExclude = services
-		}
-
-		sections := []section{}
-
-		if len(includeExclude) >0 {
-			for _, section := range allSections {
-				if (len(services) >0 && slices.Contains(services, section.service)){
-					sections = append(sections, section)
-				}
-				if (len(excludeServices) >0 && !slices.Contains(excludeServices, section.service)){
-					sections = append(sections, section)
-				}
-			}
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
 
 		fmt.Println("Services:", services)
 		fmt.Println("Sections:", sections)
+
+		updateDatatableServer()
 	},
 }
 
@@ -75,6 +67,61 @@ func init() {
 
 func getAllSections()[]section{
 	sections := []section{}
-	sections = append(sections, section{"server"}, section{"disk"}, section{"switch"})
+	sections = append(sections, section{"Server"}, section{"Disk"}, section{"Switch"})
 	return sections
+}
+
+func filterSections(services []string, excludeServices []string)([]section, error){
+	sections := []section{}
+	allSections := getAllSections()
+
+	if len(services) >0 && len(excludeServices) >0 {
+		return nil, errors.New("Please do not use --exclude-services and --services simultaneously")
+	} else if len(excludeServices) >0 {
+		for _, section := range allSections {
+			if (!slices.Contains(excludeServices, strings.ToLower(section.service))){
+				sections = append(sections, section)
+			}
+		}
+	} else if len(services) >0 {
+		for _, section := range allSections {
+			if (slices.Contains(services, strings.ToLower(section.service))){
+				sections = append(sections, section)
+			}
+		}
+	} else if len(services) ==0 && len(excludeServices)==0 {
+		sections = allSections
+	}
+	return sections, nil
+}
+
+func updateDatatableServer(){
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/server/", nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
+	access_token_secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
+	req.SetBasicAuth(access_token, access_token_secret)
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(string(body))
 }
