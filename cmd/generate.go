@@ -37,6 +37,14 @@ type ServerPlan struct {
 	CPU int `json:"CPU"`
 	MemoryMB int `json:"MemoryMB"`
 }
+
+type Resource struct {
+	Id string
+	Type string
+	Name string
+	Data any
+}
+
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -72,7 +80,11 @@ to quickly create a Cobra application.`,
 		fmt.Println("Services:", services)
 		fmt.Println("Sections:", sections)
 
-		updateDatatableServer()
+		var resources []Resource
+
+		updateDatatableServer(&resources)
+
+		fmt.Println(resources)
 	},
 }
 
@@ -113,7 +125,7 @@ func filterSections(services []string, excludeServices []string)([]Section, erro
 	return sections, nil
 }
 
-func updateDatatableServer(){
+func updateDatatableServer(resources *[]Resource){
 
 	client := &http.Client{}
 
@@ -148,4 +160,8 @@ func updateDatatableServer(){
 	}
 
 	fmt.Println(serverResponse.Servers[0].Name)
+
+	for _, server := range serverResponse.Servers {
+		*resources = append(*resources, Resource{Id:server.Name,Type: "server", Name:server.Name, Data: server})
+	}
 }
