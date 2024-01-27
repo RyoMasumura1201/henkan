@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -21,34 +22,41 @@ type Section struct {
 }
 
 type ServerResponse struct {
-	From int `json:"From"`
-	Count int `json:"Count"`
-	Total int `json:"Total"`
+	From    int      `json:"From"`
+	Count   int      `json:"Count"`
+	Total   int      `json:"Total"`
 	Servers []Server `json:"Servers"`
-	IsOK bool `json:"is_ok"`
+	IsOK    bool     `json:"is_ok"`
 }
 
 type Server struct {
-	Name string `json:"Name"`
+	Name       string     `json:"Name"`
 	ServerPlan ServerPlan `json:"ServerPlan"`
 }
 
 type ServerPlan struct {
-	CPU int `json:"CPU"`
+	CPU      int `json:"CPU"`
 	MemoryMB int `json:"MemoryMB"`
 }
 
 type Resource struct {
-	Id string
+	Id   string
 	Type string
 	Name string
 	Data any
 }
 
 type OutputResource struct {
-	Id string
+	Id   string
 	Type string
 	Data any
+}
+
+type TrackedResource struct {
+	OutputResource OutputResource
+	Service        string
+	TerraformType  string
+	Options        []any
 }
 
 // generateCmd represents the generate command
@@ -62,7 +70,6 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("generate called")
 		services, err := cmd.Flags().GetStringSlice("services")
 		if err != nil {
 			fmt.Println("Error retrieving services:", err)
@@ -83,22 +90,22 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		fmt.Println("Services:", services)
 		fmt.Println("Sections:", sections)
 
 		var resources []Resource
 
 		updateDatatableServer(&resources)
 
-		fmt.Println(resources)
-
 		var outputResources []OutputResource
 
+		// [TODO] search filter
 		for _, resource := range resources {
 			outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
 		}
 
-		performMapping(outputResources)
+		trackedResources := performMapping(outputResources)
+
+		compileOutputs(trackedResources)
 	},
 }
 
@@ -109,37 +116,37 @@ func init() {
 	generateCmd.Flags().StringSliceP("exclude-services", "e", []string{}, "list of services to exclude (can be comma separated)")
 }
 
-func getAllSections()[]Section{
+func getAllSections() []Section {
 	sections := []Section{}
 	sections = append(sections, Section{"Server"}, Section{"Disk"}, Section{"Switch"})
 	return sections
 }
 
-func filterSections(services []string, excludeServices []string)([]Section, error){
+func filterSections(services []string, excludeServices []string) ([]Section, error) {
 	sections := []Section{}
 	allSections := getAllSections()
 
-	if len(services) >0 && len(excludeServices) >0 {
+	if len(services) > 0 && len(excludeServices) > 0 {
 		return nil, errors.New("Please do not use --exclude-services and --services simultaneously")
-	} else if len(excludeServices) >0 {
+	} else if len(excludeServices) > 0 {
 		for _, section := range allSections {
-			if (!slices.Contains(excludeServices, strings.ToLower(section.service))){
+			if !slices.Contains(excludeServices, strings.ToLower(section.service)) {
 				sections = append(sections, section)
 			}
 		}
-	} else if len(services) >0 {
+	} else if len(services) > 0 {
 		for _, section := range allSections {
-			if (slices.Contains(services, strings.ToLower(section.service))){
+			if slices.Contains(services, strings.ToLower(section.service)) {
 				sections = append(sections, section)
 			}
 		}
-	} else if len(services) ==0 && len(excludeServices)==0 {
+	} else if len(services) == 0 && len(excludeServices) == 0 {
 		sections = allSections
 	}
 	return sections, nil
 }
 
-func updateDatatableServer(resources *[]Resource){
+func updateDatatableServer(resources *[]Resource) {
 
 	client := &http.Client{}
 
@@ -173,13 +180,55 @@ func updateDatatableServer(resources *[]Resource){
 		return
 	}
 
-	fmt.Println(serverResponse.Servers[0].Name)
-
 	for _, server := range serverResponse.Servers {
-		*resources = append(*resources, Resource{Id:server.Name,Type: "server", Name:server.Name, Data: server})
+		*resources = append(*resources, Resource{Id: server.Name, Type: "server", Name: server.Name, Data: server})
 	}
 }
 
-func performMapping(outputResources []OutputResource){
+func performMapping(outputResources []OutputResource) []TrackedResource {
+	var trackedResources []TrackedResource
+	for _, outputResource := range outputResources {
+		serviceMapping(outputResource, &trackedResources)
+	}
+
+	return trackedResources
+}
+
+func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedResource) {
+	if outputResource.Type == "server" {
+		// options := make(map[string]any)
+		value := reflect.ValueOf(outputResource.Data)
+		fmt.Println(value)
+		// options["name"] = outputResource.Data.Name
+
+		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server"})
+	}
+}
+
+func compileOutputs(trackedResources []TrackedResource) {
+	compiled := `
+terraform {
+    required_providers {
+        sakuracloud = {
+            source  = "sacloud/sakuracloud"
+            version = "2.25.0"
+        }
+    }
+}
+provider "sakuracloud" {
+    profile = "default"
+}
+`
+
+	fmt.Println(compiled)
+
+	for _, trackedResource := range trackedResources {
+		outputMapTf(trackedResource)
+
+	}
+
+}
+
+func outputMapTf(trackedResource TrackedResource) {
 
 }
