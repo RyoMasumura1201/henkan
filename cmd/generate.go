@@ -45,6 +45,12 @@ type Resource struct {
 	Data any
 }
 
+type OutputResource struct {
+	Id string
+	Type string
+	Data any
+}
+
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -85,6 +91,14 @@ to quickly create a Cobra application.`,
 		updateDatatableServer(&resources)
 
 		fmt.Println(resources)
+
+		var outputResources []OutputResource
+
+		for _, resource := range resources {
+			outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+		}
+
+		performMapping(outputResources)
 	},
 }
 
@@ -164,4 +178,8 @@ func updateDatatableServer(resources *[]Resource){
 	for _, server := range serverResponse.Servers {
 		*resources = append(*resources, Resource{Id:server.Name,Type: "server", Name:server.Name, Data: server})
 	}
+}
+
+func performMapping(outputResources []OutputResource){
+
 }
