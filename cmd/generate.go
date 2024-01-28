@@ -112,7 +112,13 @@ to quickly create a Cobra application.`,
 		trackedResources := performMapping(outputResources)
 
 		mappedOutputs := compileOutputs(trackedResources)
-		err = os.WriteFile("example.tf", []byte(mappedOutputs), 0666)
+		output, err := cmd.Flags().GetString("output")
+
+		if err != nil {
+			fmt.Println("Error retrieving output:", err)
+			return
+		}
+		err = os.WriteFile(output, []byte(mappedOutputs), 0666)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -125,6 +131,7 @@ func init() {
 
 	generateCmd.Flags().StringSliceP("services", "s", []string{}, "list of services to include (can be comma separated (default: ALL))")
 	generateCmd.Flags().StringSliceP("exclude-services", "e", []string{}, "list of services to exclude (can be comma separated)")
+	generateCmd.Flags().StringP("output", "o", "example.tf", "filename for Terraform output")
 }
 
 func getAllSections() []Section {
