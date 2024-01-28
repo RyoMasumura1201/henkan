@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"reflect"
 	"slices"
 	"strings"
 
@@ -56,7 +55,7 @@ type TrackedResource struct {
 	OutputResource OutputResource
 	Service        string
 	TerraformType  string
-	Options        []any
+	Options        map[string]any
 }
 
 // generateCmd represents the generate command
@@ -196,12 +195,17 @@ func performMapping(outputResources []OutputResource) []TrackedResource {
 
 func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedResource) {
 	if outputResource.Type == "server" {
-		// options := make(map[string]any)
-		value := reflect.ValueOf(outputResource.Data)
-		fmt.Println(value)
-		// options["name"] = outputResource.Data.Name
+		options := make(map[string]any)
+		server, ok := outputResource.Data.(Server)
+		if !ok {
+			panic("failed to assertion")
+		}
 
-		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server"})
+		options["name"] = server.Name
+		options["core"] = server.ServerPlan.CPU
+		options["memory"] = server.ServerPlan.MemoryMB / 1024
+
+		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options})
 	}
 }
 
@@ -220,15 +224,41 @@ provider "sakuracloud" {
 }
 `
 
-	fmt.Println(compiled)
-
 	for _, trackedResource := range trackedResources {
-		outputMapTf(trackedResource)
+		compiled += outputMapTf(trackedResource)
+	}
+
+	fmt.Println(compiled)
+}
+
+func outputMapTf(trackedResource TrackedResource) string {
+
+	var params string
+
+	fmt.Println(trackedResource.Options)
+
+	for k, v := range trackedResource.Options {
+		processTfParameter(k, v)
+		switch v := v.(type) {
+		case string:
+			v = "\"" + v + "\""
+			params += fmt.Sprintf(`
+    %s = %s`, k, v)
+		case int:
+			params += fmt.Sprintf(`
+    %s = %d`, k, v)
+		}
 
 	}
 
+	output := fmt.Sprintf(`
+resource %s "%s" {%s
+}`, trackedResource.TerraformType, trackedResource.OutputResource.Id, params)
+
+	return output
 }
 
-func outputMapTf(trackedResource TrackedResource) {
+// [TODO]
+func processTfParameter(k string, v any) {
 
 }
