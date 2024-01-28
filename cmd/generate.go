@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"slices"
@@ -104,7 +105,12 @@ to quickly create a Cobra application.`,
 
 		trackedResources := performMapping(outputResources)
 
-		compileOutputs(trackedResources)
+		mappedOutputs := compileOutputs(trackedResources)
+		err = os.WriteFile("example.tf", []byte(mappedOutputs), 0666)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	},
 }
 
@@ -209,9 +215,8 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 	}
 }
 
-func compileOutputs(trackedResources []TrackedResource) {
-	compiled := `
-terraform {
+func compileOutputs(trackedResources []TrackedResource) string {
+	compiled := `terraform {
     required_providers {
         sakuracloud = {
             source  = "sacloud/sakuracloud"
@@ -228,7 +233,7 @@ provider "sakuracloud" {
 		compiled += outputMapTf(trackedResource)
 	}
 
-	fmt.Println(compiled)
+	return compiled
 }
 
 func outputMapTf(trackedResource TrackedResource) string {
