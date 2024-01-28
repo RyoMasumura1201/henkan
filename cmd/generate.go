@@ -257,7 +257,7 @@ func outputMapTf(trackedResource TrackedResource) string {
 	}
 
 	output := fmt.Sprintf(`
-resource %s "%s" {%s
+resource "%s" "%s" {%s
 }`, trackedResource.TerraformType, trackedResource.OutputResource.Id, params)
 
 	return output
