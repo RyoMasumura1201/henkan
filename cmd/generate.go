@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -30,13 +31,18 @@ type ServerResponse struct {
 }
 
 type Server struct {
-	Name       string     `json:"Name"`
-	ServerPlan ServerPlan `json:"ServerPlan"`
+	Name       string       `json:"Name"`
+	ServerPlan ServerPlan   `json:"ServerPlan"`
+	Disks      []ServerDisk `json:"Disks"`
 }
 
 type ServerPlan struct {
 	CPU      int `json:"CPU"`
 	MemoryMB int `json:"MemoryMB"`
+}
+
+type ServerDisk struct {
+	Id string `json:"ID"`
 }
 
 type Resource struct {
@@ -210,6 +216,11 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		options["name"] = server.Name
 		options["core"] = server.ServerPlan.CPU
 		options["memory"] = server.ServerPlan.MemoryMB / 1024
+		var diskIds []string
+		for _, disk := range server.Disks {
+			diskIds = append(diskIds, disk.Id)
+		}
+		options["disks"] = diskIds
 
 		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options})
 	}
@@ -240,20 +251,10 @@ func outputMapTf(trackedResource TrackedResource) string {
 
 	var params string
 
-	fmt.Println(trackedResource.Options)
-
 	for k, v := range trackedResource.Options {
-		processTfParameter(k, v)
-		switch v := v.(type) {
-		case string:
-			v = "\"" + v + "\""
-			params += fmt.Sprintf(`
-    %s = %s`, k, v)
-		case int:
-			params += fmt.Sprintf(`
-    %s = %d`, k, v)
-		}
-
+		optionValue := processTfParameter(k, v)
+		params += fmt.Sprintf(`
+    %s = %s`, k, optionValue)
 	}
 
 	output := fmt.Sprintf(`
@@ -263,7 +264,19 @@ resource "%s" "%s" {%s
 	return output
 }
 
-// [TODO]
-func processTfParameter(k string, v any) {
-
+func processTfParameter(k string, v any) string {
+	var paramItems []string
+	switch v := v.(type) {
+	case string:
+		return "\"" + v + "\""
+	case int:
+		return strconv.Itoa(v)
+	case []string:
+		for _, param := range v {
+			paramItems = append(paramItems, processTfParameter(k, param))
+		}
+		return "[" + strings.Join(paramItems, ",") + "]"
+	default:
+		return "" //[TODO]
+	}
 }
