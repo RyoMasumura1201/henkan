@@ -31,9 +31,10 @@ type ServerResponse struct {
 }
 
 type Server struct {
-	Name       string       `json:"Name"`
-	ServerPlan ServerPlan   `json:"ServerPlan"`
-	Disks      []ServerDisk `json:"Disks"`
+	Name       string            `json:"Name"`
+	ServerPlan ServerPlan        `json:"ServerPlan"`
+	Disks      []ServerDisk      `json:"Disks"`
+	Interfaces []ServerInterface `json:"Interfaces"`
 }
 
 type ServerPlan struct {
@@ -43,6 +44,14 @@ type ServerPlan struct {
 
 type ServerDisk struct {
 	Id string `json:"ID"`
+}
+
+type ServerInterface struct {
+	Switch ServerInterfaceSwitch `json:"Switch"`
+}
+
+type ServerInterfaceSwitch struct {
+	Scope string `json:"Scope"`
 }
 
 type Resource struct {
@@ -229,6 +238,11 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		}
 		options["disks"] = diskIds
 
+		networkInterface := make(map[string]string)
+		networkInterface["upstream"] = server.Interfaces[0].Switch.Scope
+
+		options["network_interface"] = networkInterface
+
 		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options})
 	}
 }
@@ -259,9 +273,17 @@ func outputMapTf(trackedResource TrackedResource) string {
 	var params string
 
 	for k, v := range trackedResource.Options {
-		optionValue := processTfParameter(k, v)
-		params += fmt.Sprintf(`
+		switch v := v.(type) {
+		case map[string]string:
+			optionValue := processTfParameter(k, v)
+			params += fmt.Sprintf(`
+    %s %s`, k, optionValue)
+		default:
+			optionValue := processTfParameter(k, v)
+			params += fmt.Sprintf(`
     %s = %s`, k, optionValue)
+		}
+
 	}
 
 	output := fmt.Sprintf(`
@@ -283,6 +305,16 @@ func processTfParameter(k string, v any) string {
 			paramItems = append(paramItems, processTfParameter(k, param))
 		}
 		return "[" + strings.Join(paramItems, ",") + "]"
+	case map[string]string:
+		for key, value := range v {
+			subValue := processTfParameter(key, value)
+			paramItems = append(paramItems, key+" = "+subValue)
+		}
+		return `{
+        ` + strings.Join(paramItems, `
+        `) + `
+    }`
+
 	default:
 		return "" //[TODO]
 	}
