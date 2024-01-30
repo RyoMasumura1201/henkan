@@ -23,15 +23,12 @@ type Section struct {
 }
 
 type ServerResponse struct {
-	From    int      `json:"From"`
-	Count   int      `json:"Count"`
-	Total   int      `json:"Total"`
 	Servers []Server `json:"Servers"`
-	IsOK    bool     `json:"is_ok"`
 }
 
 type Server struct {
 	Name       string            `json:"Name"`
+	HostName   string            `json:"HostName"`
 	ServerPlan ServerPlan        `json:"ServerPlan"`
 	Disks      []ServerDisk      `json:"Disks"`
 	Interfaces []ServerInterface `json:"Interfaces"`
@@ -52,6 +49,22 @@ type ServerInterface struct {
 
 type ServerInterfaceSwitch struct {
 	Scope string `json:"Scope"`
+}
+
+type DiskResponse struct {
+	Disks []Disk `json:"Disks"`
+}
+
+type Disk struct {
+	ID         string   `json:"ID"`
+	Name       string   `json:"Name"`
+	SizeMB     int      `json:"SizeMB"`
+	Connection string   `json:"Connection"`
+	Plan       DiskPlan `json:"Plan"`
+}
+
+type DiskPlan struct {
+	Name string `json:"Name"`
 }
 
 type Resource struct {
@@ -108,6 +121,8 @@ to quickly create a Cobra application.`,
 		fmt.Println("Sections:", sections)
 
 		var resources []Resource
+
+		updateDatatableDisk(&resources)
 
 		updateDatatableServer(&resources)
 
@@ -212,6 +227,45 @@ func updateDatatableServer(resources *[]Resource) {
 	}
 }
 
+func updateDatatableDisk(resources *[]Resource) {
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/disk/", nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
+	access_token_secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
+	req.SetBasicAuth(access_token, access_token_secret)
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var diskResponse DiskResponse
+	if err := json.Unmarshal(body, &diskResponse); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, disk := range diskResponse.Disks {
+		*resources = append(*resources, Resource{Id: disk.Name, Type: "disk", Name: disk.Name, Data: disk})
+	}
+}
+
 func performMapping(outputResources []OutputResource) []TrackedResource {
 	var trackedResources []TrackedResource
 	for _, outputResource := range outputResources {
@@ -243,7 +297,25 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 
 		options["network_interface"] = networkInterface
 
+		diskEditParameter := make(map[string]string)
+		diskEditParameter["hostname"] = server.HostName
+
+		options["disk_edit_parameter"] = diskEditParameter
+
 		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options})
+	} else if outputResource.Type == "disk" {
+		options := make(map[string]any)
+		disk, ok := outputResource.Data.(Disk)
+		if !ok {
+			panic("failed to assertion")
+		}
+
+		options["name"] = disk.Name
+		options["connector"] = disk.Connection
+		options["size"] = disk.SizeMB / 1024
+		options["plan"] = strings.ToLower(strings.Replace(disk.Plan.Name, "プラン", "", -1))
+
+		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "disk", TerraformType: "sakuracloud_disk", Options: options})
 	}
 }
 
