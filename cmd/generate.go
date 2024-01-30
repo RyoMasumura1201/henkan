@@ -101,30 +101,40 @@ to quickly create a Cobra application.`,
 		services, err := cmd.Flags().GetStringSlice("services")
 		if err != nil {
 			fmt.Println("Error retrieving services:", err)
-			return
+			os.Exit(1)
 		}
 
 		excludeServices, err := cmd.Flags().GetStringSlice("exclude-services")
 
 		if err != nil {
 			fmt.Println("Error retrieving exclude services:", err)
-			return
+			os.Exit(1)
 		}
 
 		sections, err := filterSections(services, excludeServices)
 
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 
 		fmt.Println("Sections:", sections)
 
 		var resources []Resource
 
-		updateDatatableDisk(&resources)
+		err = updateDatatableDisk(&resources)
 
-		updateDatatableServer(&resources)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		err = updateDatatableServer(&resources)
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 
 		var outputResources []OutputResource
 
@@ -140,11 +150,12 @@ to quickly create a Cobra application.`,
 
 		if err != nil {
 			fmt.Println("Error retrieving output:", err)
-			return
+			os.Exit(1)
 		}
 		err = os.WriteFile(output, []byte(mappedOutputs), 0666)
 		if err != nil {
 			log.Fatal(err)
+			os.Exit(1)
 		}
 
 	},
@@ -188,7 +199,7 @@ func filterSections(services []string, excludeServices []string) ([]Section, err
 	return sections, nil
 }
 
-func updateDatatableServer(resources *[]Resource) {
+func updateDatatableServer(resources *[]Resource) error {
 
 	client := &http.Client{}
 
@@ -196,7 +207,7 @@ func updateDatatableServer(resources *[]Resource) {
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
 	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
@@ -206,28 +217,30 @@ func updateDatatableServer(resources *[]Resource) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
 	var serverResponse ServerResponse
 	if err := json.Unmarshal(body, &serverResponse); err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
 	for _, server := range serverResponse.Servers {
 		*resources = append(*resources, Resource{Id: server.Name, Type: "server", Name: server.Name, Data: server})
 	}
+
+	return nil
 }
 
-func updateDatatableDisk(resources *[]Resource) {
+func updateDatatableDisk(resources *[]Resource) error {
 
 	client := &http.Client{}
 
@@ -235,7 +248,7 @@ func updateDatatableDisk(resources *[]Resource) {
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
 	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
@@ -245,25 +258,26 @@ func updateDatatableDisk(resources *[]Resource) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
 	var diskResponse DiskResponse
 	if err := json.Unmarshal(body, &diskResponse); err != nil {
 		fmt.Println(err)
-		return
+		return err
 	}
 
 	for _, disk := range diskResponse.Disks {
 		*resources = append(*resources, Resource{Id: disk.Name, Type: "disk", Name: disk.Name, Data: disk})
 	}
+	return nil
 }
 
 func performMapping(outputResources []OutputResource) []TrackedResource {
