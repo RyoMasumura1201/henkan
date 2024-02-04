@@ -8,6 +8,7 @@ type ServerResponse struct {
 }
 
 type Server struct {
+	ID         string            `json:"ID"`
 	Name       string            `json:"Name"`
 	HostName   string            `json:"HostName"`
 	ServerPlan ServerPlan        `json:"ServerPlan"`

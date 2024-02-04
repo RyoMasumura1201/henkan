@@ -41,6 +41,7 @@ type TrackedResource struct {
 	Service        string
 	TerraformType  string
 	Options        map[string]any
+	ReturnValues   map[string]string
 }
 
 // generateCmd represents the generate command
@@ -276,7 +277,10 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 
 		options["disk_edit_parameter"] = diskEditParameter
 
-		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options})
+		returnValues := make(map[string]string)
+		returnValues["id"] = server.ID
+
+		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
 	} else if outputResource.Type == "disk" {
 		options := make(map[string]any)
 		disk, ok := outputResource.Data.(service.Disk)
@@ -289,7 +293,10 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		options["size"] = disk.SizeMB / 1024
 		options["plan"] = strings.ToLower(strings.Replace(disk.Plan.Name, "プラン", "", -1))
 
-		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "disk", TerraformType: "sakuracloud_disk", Options: options})
+		returnValues := make(map[string]string)
+		returnValues["id"] = disk.ID
+
+		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "disk", TerraformType: "sakuracloud_disk", Options: options, ReturnValues: returnValues})
 	}
 }
 
