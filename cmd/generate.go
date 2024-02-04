@@ -15,56 +15,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/RyoMasumura1201/henkan/service"
 	"github.com/spf13/cobra"
 )
 
 type Section struct {
 	service string
-}
-
-type ServerResponse struct {
-	Servers []Server `json:"Servers"`
-}
-
-type Server struct {
-	Name       string            `json:"Name"`
-	HostName   string            `json:"HostName"`
-	ServerPlan ServerPlan        `json:"ServerPlan"`
-	Disks      []ServerDisk      `json:"Disks"`
-	Interfaces []ServerInterface `json:"Interfaces"`
-}
-
-type ServerPlan struct {
-	CPU      int `json:"CPU"`
-	MemoryMB int `json:"MemoryMB"`
-}
-
-type ServerDisk struct {
-	Id string `json:"ID"`
-}
-
-type ServerInterface struct {
-	Switch ServerInterfaceSwitch `json:"Switch"`
-}
-
-type ServerInterfaceSwitch struct {
-	Scope string `json:"Scope"`
-}
-
-type DiskResponse struct {
-	Disks []Disk `json:"Disks"`
-}
-
-type Disk struct {
-	ID         string   `json:"ID"`
-	Name       string   `json:"Name"`
-	SizeMB     int      `json:"SizeMB"`
-	Connection string   `json:"Connection"`
-	Plan       DiskPlan `json:"Plan"`
-}
-
-type DiskPlan struct {
-	Name string `json:"Name"`
 }
 
 type Resource struct {
@@ -231,7 +187,7 @@ func updateDatatableServer(resources *[]Resource) error {
 		return err
 	}
 
-	var serverResponse ServerResponse
+	var serverResponse service.ServerResponse
 	if err := json.Unmarshal(body, &serverResponse); err != nil {
 		fmt.Println(err)
 		return err
@@ -272,7 +228,7 @@ func updateDatatableDisk(resources *[]Resource) error {
 		return err
 	}
 
-	var diskResponse DiskResponse
+	var diskResponse service.DiskResponse
 	if err := json.Unmarshal(body, &diskResponse); err != nil {
 		fmt.Println(err)
 		return err
@@ -296,7 +252,7 @@ func performMapping(outputResources []OutputResource) []TrackedResource {
 func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedResource) {
 	if outputResource.Type == "server" {
 		options := make(map[string]any)
-		server, ok := outputResource.Data.(Server)
+		server, ok := outputResource.Data.(service.Server)
 		if !ok {
 			panic("failed to assertion")
 		}
@@ -323,7 +279,7 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options})
 	} else if outputResource.Type == "disk" {
 		options := make(map[string]any)
-		disk, ok := outputResource.Data.(Disk)
+		disk, ok := outputResource.Data.(service.Disk)
 		if !ok {
 			panic("failed to assertion")
 		}
