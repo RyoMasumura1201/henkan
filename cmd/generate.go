@@ -122,18 +122,22 @@ to quickly create a Cobra application.`,
 
 		var resources []Resource
 
-		err = updateDatatableDisk(&resources)
+		for _, section := range sections {
+			if section.service == "Disk" {
+				err = updateDatatableDisk(&resources)
 
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			} else if section.service == "Server" {
+				err = updateDatatableServer(&resources)
 
-		err = updateDatatableServer(&resources)
-
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			}
 		}
 
 		var outputResources []OutputResource
