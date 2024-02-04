@@ -81,16 +81,12 @@ to quickly create a Cobra application.`,
 
 		for _, section := range sections {
 			if section.service == "Disk" {
-				err = updateDatatableDisk(&resources)
-
-				if err != nil {
+				if err = updateDatatableDisk(&resources); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
 			} else if section.service == "Server" {
-				err = updateDatatableServer(&resources)
-
-				if err != nil {
+				if err = updateDatatableServer(&resources); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
@@ -113,12 +109,10 @@ to quickly create a Cobra application.`,
 			fmt.Println("Error retrieving output:", err)
 			os.Exit(1)
 		}
-		err = os.WriteFile(output, []byte(mappedOutputs), 0666)
-		if err != nil {
+		if err = os.WriteFile(output, []byte(mappedOutputs), 0666); err != nil {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-
 	},
 }
 
