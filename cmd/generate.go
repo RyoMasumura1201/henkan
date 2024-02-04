@@ -315,24 +315,24 @@ provider "sakuracloud" {
 `
 
 	for _, trackedResource := range trackedResources {
-		compiled += outputMapTf(trackedResource)
+		compiled += outputMapTf(trackedResource, trackedResources)
 	}
 
 	return compiled
 }
 
-func outputMapTf(trackedResource TrackedResource) string {
+func outputMapTf(trackedResource TrackedResource, trackedResources []TrackedResource) string {
 
 	var params string
 
 	for k, v := range trackedResource.Options {
 		switch v := v.(type) {
 		case map[string]string:
-			optionValue := processTfParameter(k, v)
+			optionValue := processTfParameter(k, v, trackedResources)
 			params += fmt.Sprintf(`
     %s %s`, k, optionValue)
 		default:
-			optionValue := processTfParameter(k, v)
+			optionValue := processTfParameter(k, v, trackedResources)
 			params += fmt.Sprintf(`
     %s = %s`, k, optionValue)
 		}
@@ -346,21 +346,31 @@ resource "%s" "%s" {%s
 	return output
 }
 
-func processTfParameter(k string, v any) string {
+func processTfParameter(k string, v any, trackedResources []TrackedResource) string {
 	var paramItems []string
 	switch v := v.(type) {
 	case string:
+		for _, trackedResource := range trackedResources {
+			if trackedResource.ReturnValues != nil {
+				for key, value := range trackedResource.ReturnValues {
+					if value == v {
+						return trackedResource.TerraformType + "." + trackedResource.OutputResource.Id + "." + key
+					}
+				}
+			}
+
+		}
 		return "\"" + v + "\""
 	case int:
 		return strconv.Itoa(v)
 	case []string:
 		for _, param := range v {
-			paramItems = append(paramItems, processTfParameter(k, param))
+			paramItems = append(paramItems, processTfParameter(k, param, trackedResources))
 		}
 		return "[" + strings.Join(paramItems, ",") + "]"
 	case map[string]string:
 		for key, value := range v {
-			subValue := processTfParameter(key, value)
+			subValue := processTfParameter(key, value, trackedResources)
 			paramItems = append(paramItems, key+" = "+subValue)
 		}
 		return `{
