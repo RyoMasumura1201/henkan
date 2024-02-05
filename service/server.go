@@ -14,6 +14,7 @@ type Server struct {
 	ServerPlan ServerPlan        `json:"ServerPlan"`
 	Disks      []ServerDisk      `json:"Disks"`
 	Interfaces []ServerInterface `json:"Interfaces"`
+	Tags       []string          `json:"Tags"`
 }
 
 type ServerPlan struct {
