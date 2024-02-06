@@ -37,7 +37,6 @@ type OutputResource struct {
 
 type TrackedResource struct {
 	ResourceName  string
-	Service       string
 	TerraformType string
 	Options       map[string]any
 	ReturnValues  map[string]string
@@ -193,7 +192,7 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		returnValues := make(map[string]string)
 		returnValues["id"] = data.ID
 
-		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, Service: "server", TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
+		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
 	case Disk:
 		options := make(map[string]any)
 
@@ -205,7 +204,7 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		returnValues := make(map[string]string)
 		returnValues["id"] = data.ID
 
-		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, Service: "disk", TerraformType: "sakuracloud_disk", Options: options, ReturnValues: returnValues})
+		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, TerraformType: "sakuracloud_disk", Options: options, ReturnValues: returnValues})
 	}
 }
 
