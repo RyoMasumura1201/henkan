@@ -36,11 +36,11 @@ type OutputResource struct {
 }
 
 type TrackedResource struct {
-	OutputResource OutputResource
-	Service        string
-	TerraformType  string
-	Options        map[string]any
-	ReturnValues   map[string]string
+	ResourceName  string
+	Service       string
+	TerraformType string
+	Options       map[string]any
+	ReturnValues  map[string]string
 }
 
 // generateCmd represents the generate command
@@ -195,7 +195,7 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		returnValues := make(map[string]string)
 		returnValues["id"] = server.ID
 
-		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
+		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, Service: "server", TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
 	} else if outputResource.Type == "disk" {
 		options := make(map[string]any)
 		disk, ok := outputResource.Data.(Disk)
@@ -211,7 +211,7 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		returnValues := make(map[string]string)
 		returnValues["id"] = disk.ID
 
-		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "disk", TerraformType: "sakuracloud_disk", Options: options, ReturnValues: returnValues})
+		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, Service: "disk", TerraformType: "sakuracloud_disk", Options: options, ReturnValues: returnValues})
 	}
 }
 
@@ -256,7 +256,7 @@ func outputMapTf(trackedResource TrackedResource, trackedResources []TrackedReso
 
 	output := fmt.Sprintf(`
 resource "%s" "%s" {%s
-}`, trackedResource.TerraformType, trackedResource.OutputResource.Id, params)
+}`, trackedResource.TerraformType, trackedResource.ResourceName, params)
 
 	return output
 }
@@ -269,7 +269,7 @@ func processTfParameter(k string, v any, trackedResources []TrackedResource) str
 			if trackedResource.ReturnValues != nil {
 				for key, value := range trackedResource.ReturnValues {
 					if value == v {
-						return trackedResource.TerraformType + "." + trackedResource.OutputResource.Id + "." + key
+						return trackedResource.TerraformType + "." + trackedResource.ResourceName + "." + key
 					}
 				}
 			}
