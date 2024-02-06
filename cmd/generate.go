@@ -298,10 +298,10 @@ func processTfParameter(k string, v any, trackedResources []TrackedResource) str
 	}
 }
 
-func callApi[T any](response *T, resourceName string) error {
+func callApi[T any](response *T, serviceName string) error {
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/"+resourceName+"/", nil)
+	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/"+serviceName+"/", nil)
 
 	if err != nil {
 		fmt.Println(err)
