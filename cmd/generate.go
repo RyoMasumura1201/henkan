@@ -156,34 +156,9 @@ func filterSections(services []string, excludeServices []string) ([]Section, err
 
 func updateDatatableServer(resources *[]Resource) error {
 
-	client := &http.Client{}
-
-	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/server/", nil)
+	serverResponse, err := callApi[service.ServerResponse]("server")
 
 	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
-	access_token_secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
-	req.SetBasicAuth(access_token, access_token_secret)
-
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	var serverResponse service.ServerResponse
-	if err := json.Unmarshal(body, &serverResponse); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -197,38 +172,12 @@ func updateDatatableServer(resources *[]Resource) error {
 
 func updateDatatableDisk(resources *[]Resource) error {
 
-	client := &http.Client{}
-
-	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/disk/", nil)
+	diskResponse, err := callApi[service.DiskResponse]("disk")
 
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-
-	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
-	access_token_secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
-	req.SetBasicAuth(access_token, access_token_secret)
-
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	var diskResponse service.DiskResponse
-	if err := json.Unmarshal(body, &diskResponse); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
 	for _, disk := range diskResponse.Disks {
 		*resources = append(*resources, Resource{Id: disk.Name, Type: "disk", Name: disk.Name, Data: disk})
 	}
@@ -378,4 +327,39 @@ func processTfParameter(k string, v any, trackedResources []TrackedResource) str
 	default:
 		return "" //[TODO]
 	}
+}
+
+func callApi[T any](resourceName string) (*T, error) {
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/"+resourceName+"/", nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
+	access_token_secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
+	req.SetBasicAuth(access_token, access_token_secret)
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	var response T
+	if err := json.Unmarshal(body, &response); err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return &response, nil
 }
