@@ -41,9 +41,7 @@ func updateDatatableServer(resources *[]Resource) error {
 
 	var serverResponse ServerResponse
 
-	err := callApi(&serverResponse, "server")
-
-	if err != nil {
+	if err := callApi(&serverResponse, "server"); err != nil {
 		fmt.Println(err)
 		return err
 	}

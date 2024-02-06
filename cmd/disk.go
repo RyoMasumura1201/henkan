@@ -28,12 +28,11 @@ func updateDatatableDisk(resources *[]Resource) error {
 
 	var diskResponse DiskResponse
 
-	err := callApi(&diskResponse, "disk")
-
-	if err != nil {
+	if err := callApi(&diskResponse, "disk"); err != nil {
 		fmt.Println(err)
 		return err
 	}
+
 	for _, disk := range diskResponse.Disks {
 		*resources = append(*resources, Resource{Id: disk.Name, Type: "disk", Name: disk.Name, Data: disk})
 	}
