@@ -8,13 +8,14 @@ type ServerResponse struct {
 }
 
 type Server struct {
-	ID         string            `json:"ID"`
-	Name       string            `json:"Name"`
-	HostName   string            `json:"HostName"`
-	ServerPlan ServerPlan        `json:"ServerPlan"`
-	Disks      []ServerDisk      `json:"Disks"`
-	Interfaces []ServerInterface `json:"Interfaces"`
-	Tags       []string          `json:"Tags"`
+	ID          string            `json:"ID"`
+	Name        string            `json:"Name"`
+	HostName    string            `json:"HostName"`
+	ServerPlan  ServerPlan        `json:"ServerPlan"`
+	Disks       []ServerDisk      `json:"Disks"`
+	Interfaces  []ServerInterface `json:"Interfaces"`
+	Tags        []string          `json:"Tags"`
+	Description string            `json:"Description"`
 }
 
 type ServerPlan struct {

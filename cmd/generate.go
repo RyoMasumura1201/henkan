@@ -272,6 +272,7 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		options["disk_edit_parameter"] = diskEditParameter
 
 		options["tags"] = server.Tags
+		options["description"] = server.Description
 
 		returnValues := make(map[string]string)
 		returnValues["id"] = server.ID
