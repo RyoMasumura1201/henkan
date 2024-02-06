@@ -1,7 +1,7 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package service
+package cmd
 
 type ServerResponse struct {
 	Servers []Server `json:"Servers"`

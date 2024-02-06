@@ -15,7 +15,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RyoMasumura1201/henkan/service"
 	"github.com/spf13/cobra"
 )
 
@@ -156,7 +155,7 @@ func filterSections(services []string, excludeServices []string) ([]Section, err
 
 func updateDatatableServer(resources *[]Resource) error {
 
-	serverResponse, err := callApi[service.ServerResponse]("server")
+	serverResponse, err := callApi[ServerResponse]("server")
 
 	if err != nil {
 		fmt.Println(err)
@@ -172,7 +171,7 @@ func updateDatatableServer(resources *[]Resource) error {
 
 func updateDatatableDisk(resources *[]Resource) error {
 
-	diskResponse, err := callApi[service.DiskResponse]("disk")
+	diskResponse, err := callApi[DiskResponse]("disk")
 
 	if err != nil {
 		fmt.Println(err)
@@ -196,7 +195,7 @@ func performMapping(outputResources []OutputResource) []TrackedResource {
 func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedResource) {
 	if outputResource.Type == "server" {
 		options := make(map[string]any)
-		server, ok := outputResource.Data.(service.Server)
+		server, ok := outputResource.Data.(Server)
 		if !ok {
 			panic("failed to assertion")
 		}
@@ -229,7 +228,7 @@ func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedRe
 		*trackedResources = append(*trackedResources, TrackedResource{OutputResource: outputResource, Service: "server", TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
 	} else if outputResource.Type == "disk" {
 		options := make(map[string]any)
-		disk, ok := outputResource.Data.(service.Disk)
+		disk, ok := outputResource.Data.(Disk)
 		if !ok {
 			panic("failed to assertion")
 		}
