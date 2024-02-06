@@ -153,36 +153,6 @@ func filterSections(services []string, excludeServices []string) ([]Section, err
 	return sections, nil
 }
 
-func updateDatatableServer(resources *[]Resource) error {
-
-	serverResponse, err := callApi[ServerResponse]("server")
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	for _, server := range serverResponse.Servers {
-		*resources = append(*resources, Resource{Id: server.Name, Type: "server", Name: server.Name, Data: server})
-	}
-
-	return nil
-}
-
-func updateDatatableDisk(resources *[]Resource) error {
-
-	diskResponse, err := callApi[DiskResponse]("disk")
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	for _, disk := range diskResponse.Disks {
-		*resources = append(*resources, Resource{Id: disk.Name, Type: "disk", Name: disk.Name, Data: disk})
-	}
-	return nil
-}
-
 func performMapping(outputResources []OutputResource) []TrackedResource {
 	var trackedResources []TrackedResource
 	for _, outputResource := range outputResources {

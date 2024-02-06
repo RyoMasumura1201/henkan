@@ -3,6 +3,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
 package cmd
 
+import "fmt"
+
 type DiskResponse struct {
 	Disks []Disk `json:"Disks"`
 }
@@ -17,4 +19,18 @@ type Disk struct {
 
 type DiskPlan struct {
 	Name string `json:"Name"`
+}
+
+func updateDatatableDisk(resources *[]Resource) error {
+
+	diskResponse, err := callApi[DiskResponse]("disk")
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	for _, disk := range diskResponse.Disks {
+		*resources = append(*resources, Resource{Id: disk.Name, Type: "disk", Name: disk.Name, Data: disk})
+	}
+	return nil
 }

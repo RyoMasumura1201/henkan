@@ -3,6 +3,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
 package cmd
 
+import "fmt"
+
 type ServerResponse struct {
 	Servers []Server `json:"Servers"`
 }
@@ -33,4 +35,20 @@ type ServerInterface struct {
 
 type ServerInterfaceSwitch struct {
 	Scope string `json:"Scope"`
+}
+
+func updateDatatableServer(resources *[]Resource) error {
+
+	serverResponse, err := callApi[ServerResponse]("server")
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	for _, server := range serverResponse.Servers {
+		*resources = append(*resources, Resource{Id: server.Name, Type: "server", Name: server.Name, Data: server})
+	}
+
+	return nil
 }
