@@ -298,14 +298,14 @@ func processTfParameter(k string, v any, trackedResources []TrackedResource) str
 	}
 }
 
-func callApi[T any](resourceName string) (*T, error) {
+func callApi[T any](response *T, resourceName string) error {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/"+resourceName+"/", nil)
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return err
 	}
 
 	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
@@ -315,20 +315,19 @@ func callApi[T any](resourceName string) (*T, error) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return err
 	}
 
-	var response T
 	if err := json.Unmarshal(body, &response); err != nil {
 		fmt.Println(err)
-		return nil, err
+		return err
 	}
-	return &response, nil
+	return nil
 }

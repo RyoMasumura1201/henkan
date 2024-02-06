@@ -23,7 +23,9 @@ type DiskPlan struct {
 
 func updateDatatableDisk(resources *[]Resource) error {
 
-	diskResponse, err := callApi[DiskResponse]("disk")
+	var diskResponse DiskResponse
+
+	err := callApi(&diskResponse, "disk")
 
 	if err != nil {
 		fmt.Println(err)

@@ -39,7 +39,9 @@ type ServerInterfaceSwitch struct {
 
 func updateDatatableServer(resources *[]Resource) error {
 
-	serverResponse, err := callApi[ServerResponse]("server")
+	var serverResponse ServerResponse
+
+	err := callApi(&serverResponse, "server")
 
 	if err != nil {
 		fmt.Println(err)
