@@ -84,5 +84,4 @@ func (s Server) ServiceMapping(trackedResources *[]TrackedResource) {
 	returnValues["id"] = s.ID
 
 	*trackedResources = append(*trackedResources, TrackedResource{ResourceName: s.Name, TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
-
 }
