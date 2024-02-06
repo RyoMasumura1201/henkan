@@ -163,53 +163,47 @@ func performMapping(outputResources []OutputResource) []TrackedResource {
 }
 
 func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedResource) {
-	if outputResource.Type == "server" {
-		options := make(map[string]any)
-		server, ok := outputResource.Data.(Server)
-		if !ok {
-			panic("failed to assertion")
-		}
 
-		options["name"] = server.Name
-		options["core"] = server.ServerPlan.CPU
-		options["memory"] = server.ServerPlan.MemoryMB / 1024
+	switch data := outputResource.Data.(type) {
+	case Server:
+		options := make(map[string]any)
+
+		options["name"] = data.Name
+		options["core"] = data.ServerPlan.CPU
+		options["memory"] = data.ServerPlan.MemoryMB / 1024
 		var diskIds []string
-		for _, disk := range server.Disks {
+		for _, disk := range data.Disks {
 			diskIds = append(diskIds, disk.Id)
 		}
 		options["disks"] = diskIds
 
 		networkInterface := make(map[string]string)
-		networkInterface["upstream"] = server.Interfaces[0].Switch.Scope
+		networkInterface["upstream"] = data.Interfaces[0].Switch.Scope
 
 		options["network_interface"] = networkInterface
 
 		diskEditParameter := make(map[string]string)
-		diskEditParameter["hostname"] = server.HostName
+		diskEditParameter["hostname"] = data.HostName
 
 		options["disk_edit_parameter"] = diskEditParameter
 
-		options["tags"] = server.Tags
-		options["description"] = server.Description
+		options["tags"] = data.Tags
+		options["description"] = data.Description
 
 		returnValues := make(map[string]string)
-		returnValues["id"] = server.ID
+		returnValues["id"] = data.ID
 
 		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, Service: "server", TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
-	} else if outputResource.Type == "disk" {
+	case Disk:
 		options := make(map[string]any)
-		disk, ok := outputResource.Data.(Disk)
-		if !ok {
-			panic("failed to assertion")
-		}
 
-		options["name"] = disk.Name
-		options["connector"] = disk.Connection
-		options["size"] = disk.SizeMB / 1024
-		options["plan"] = strings.ToLower(strings.Replace(disk.Plan.Name, "プラン", "", -1))
+		options["name"] = data.Name
+		options["connector"] = data.Connection
+		options["size"] = data.SizeMB / 1024
+		options["plan"] = strings.ToLower(strings.Replace(data.Plan.Name, "プラン", "", -1))
 
 		returnValues := make(map[string]string)
-		returnValues["id"] = disk.ID
+		returnValues["id"] = data.ID
 
 		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, Service: "disk", TerraformType: "sakuracloud_disk", Options: options, ReturnValues: returnValues})
 	}
