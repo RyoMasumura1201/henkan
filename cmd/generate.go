@@ -26,13 +26,13 @@ type Resource struct {
 	Id   string
 	Type string
 	Name string
-	Data any
+	Data Service
 }
 
 type OutputResource struct {
 	Id   string
 	Type string
-	Data any
+	Data Service
 }
 
 type TrackedResource struct {
@@ -40,6 +40,10 @@ type TrackedResource struct {
 	TerraformType string
 	Options       map[string]any
 	ReturnValues  map[string]string
+}
+
+type Service interface {
+	ServiceMapping(trackedResources *[]TrackedResource)
 }
 
 // generateCmd represents the generate command
@@ -155,57 +159,10 @@ func filterSections(services []string, excludeServices []string) ([]Section, err
 func performMapping(outputResources []OutputResource) []TrackedResource {
 	var trackedResources []TrackedResource
 	for _, outputResource := range outputResources {
-		serviceMapping(outputResource, &trackedResources)
+		outputResource.Data.ServiceMapping(&trackedResources)
 	}
 
 	return trackedResources
-}
-
-func serviceMapping(outputResource OutputResource, trackedResources *[]TrackedResource) {
-
-	switch data := outputResource.Data.(type) {
-	case Server:
-		options := make(map[string]any)
-
-		options["name"] = data.Name
-		options["core"] = data.ServerPlan.CPU
-		options["memory"] = data.ServerPlan.MemoryMB / 1024
-		var diskIds []string
-		for _, disk := range data.Disks {
-			diskIds = append(diskIds, disk.Id)
-		}
-		options["disks"] = diskIds
-
-		networkInterface := make(map[string]string)
-		networkInterface["upstream"] = data.Interfaces[0].Switch.Scope
-
-		options["network_interface"] = networkInterface
-
-		diskEditParameter := make(map[string]string)
-		diskEditParameter["hostname"] = data.HostName
-
-		options["disk_edit_parameter"] = diskEditParameter
-
-		options["tags"] = data.Tags
-		options["description"] = data.Description
-
-		returnValues := make(map[string]string)
-		returnValues["id"] = data.ID
-
-		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
-	case Disk:
-		options := make(map[string]any)
-
-		options["name"] = data.Name
-		options["connector"] = data.Connection
-		options["size"] = data.SizeMB / 1024
-		options["plan"] = strings.ToLower(strings.Replace(data.Plan.Name, "プラン", "", -1))
-
-		returnValues := make(map[string]string)
-		returnValues["id"] = data.ID
-
-		*trackedResources = append(*trackedResources, TrackedResource{ResourceName: outputResource.Id, TerraformType: "sakuracloud_disk", Options: options, ReturnValues: returnValues})
-	}
 }
 
 func compileOutputs(trackedResources []TrackedResource) string {

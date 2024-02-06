@@ -54,3 +54,35 @@ func updateDatatableServer(resources *[]Resource) error {
 
 	return nil
 }
+
+func (s Server) ServiceMapping(trackedResources *[]TrackedResource) {
+	options := make(map[string]any)
+
+	options["name"] = s.Name
+	options["core"] = s.ServerPlan.CPU
+	options["memory"] = s.ServerPlan.MemoryMB / 1024
+	var diskIds []string
+	for _, disk := range s.Disks {
+		diskIds = append(diskIds, disk.Id)
+	}
+	options["disks"] = diskIds
+
+	networkInterface := make(map[string]string)
+	networkInterface["upstream"] = s.Interfaces[0].Switch.Scope
+
+	options["network_interface"] = networkInterface
+
+	diskEditParameter := make(map[string]string)
+	diskEditParameter["hostname"] = s.HostName
+
+	options["disk_edit_parameter"] = diskEditParameter
+
+	options["tags"] = s.Tags
+	options["description"] = s.Description
+
+	returnValues := make(map[string]string)
+	returnValues["id"] = s.ID
+
+	*trackedResources = append(*trackedResources, TrackedResource{ResourceName: s.Name, TerraformType: "sakuracloud_server", Options: options, ReturnValues: returnValues})
+
+}
