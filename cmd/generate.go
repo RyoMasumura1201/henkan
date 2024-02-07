@@ -24,11 +24,11 @@ type Resource struct {
 	Data Service
 }
 
-type OutputResource struct {
-	Id   string
-	Type string
-	Data Service
-}
+// type OutputResource struct {
+// 	Id   string
+// 	Type string
+// 	Data Service
+// }
 
 type TrackedResource struct {
 	ResourceName  string
@@ -159,7 +159,7 @@ func filterSections(services []string, excludeServices []string) ([]string, erro
 	return sections, nil
 }
 
-func performMapping(outputResources []OutputResource) []TrackedResource {
+func performMapping(outputResources []Resource) []TrackedResource {
 	var trackedResources []TrackedResource
 	for _, outputResource := range outputResources {
 		outputResource.Data.ServiceMapping(&trackedResources)
@@ -285,12 +285,12 @@ func callApi[T any](response *T, serviceName string) error {
 	return nil
 }
 
-func filterResource(searchFilter string, resources *[]Resource) ([]OutputResource, error) {
-	var outputResources []OutputResource
+func filterResource(searchFilter string, resources *[]Resource) ([]Resource, error) {
+	var outputResources []Resource
 
 	for _, resource := range *resources {
 		if searchFilter == "" {
-			outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+			outputResources = append(outputResources, resource)
 			return outputResources, nil
 		}
 
@@ -307,7 +307,7 @@ func filterResource(searchFilter string, resources *[]Resource) ([]OutputResourc
 
 			for _, searchTerm := range strings.Split(searchFilter, ",") {
 				if strings.Contains(jsonResString, searchTerm) {
-					outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+					outputResources = append(outputResources, resource)
 					break
 				}
 			}
@@ -317,13 +317,13 @@ func filterResource(searchFilter string, resources *[]Resource) ([]OutputResourc
 			searchWords := strings.Split(searchFilter, "&")
 
 			if isAllContains(jsonResString, searchWords) {
-				outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+				outputResources = append(outputResources, resource)
 			}
 		} else {
 
 			jsonResString := string(jsonResBytes)
 			if strings.Contains(jsonResString, searchFilter) {
-				outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+				outputResources = append(outputResources, resource)
 			}
 		}
 	}
