@@ -47,7 +47,7 @@ func updateDatatableServer(resources *[]Resource) error {
 	}
 
 	for _, server := range serverResponse.Servers {
-		*resources = append(*resources, Resource{Id: server.Name, Type: "server", Name: server.Name, Data: server})
+		*resources = append(*resources, Resource{Id: server.Name, Type: "server", Data: server})
 	}
 
 	return nil

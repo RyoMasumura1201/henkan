@@ -25,7 +25,6 @@ type Section struct {
 type Resource struct {
 	Id   string
 	Type string
-	Name string
 	Data Service
 }
 
