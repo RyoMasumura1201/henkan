@@ -97,9 +97,61 @@ to quickly create a Cobra application.`,
 
 		var outputResources []OutputResource
 
-		// [TODO] search filter
+		searchFilter, err := cmd.Flags().GetString("filter")
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		for _, resource := range resources {
-			outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+			if searchFilter == "" {
+				outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+			} else if strings.Contains(searchFilter, ",") {
+				jsonResBytes, err := json.Marshal(resource)
+
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				jsonResString := string(jsonResBytes)
+
+				for _, searchTerm := range strings.Split(searchFilter, ",") {
+					if strings.Contains(jsonResString, searchTerm) {
+						outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+						break
+					}
+				}
+
+			} else if strings.Contains(searchFilter, "&") {
+				jsonResBytes, err := json.Marshal(resource)
+
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				jsonResString := string(jsonResBytes)
+
+				searchWords := strings.Split(searchFilter, "&")
+
+				if isAllContains(jsonResString, searchWords) {
+					outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+				}
+			} else {
+				jsonResBytes, err := json.Marshal(resource)
+
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				jsonResString := string(jsonResBytes)
+				if strings.Contains(jsonResString, searchFilter) {
+					outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+				}
+			}
 		}
 
 		trackedResources := performMapping(outputResources)
@@ -123,6 +175,7 @@ func init() {
 
 	generateCmd.Flags().StringSliceP("services", "s", []string{}, "list of services to include (can be comma separated (default: ALL))")
 	generateCmd.Flags().StringSliceP("exclude-services", "e", []string{}, "list of services to exclude (can be comma separated)")
+	generateCmd.Flags().StringP("filter", "f", "", "search filter for discovered resources (can be comma separated)")
 	generateCmd.Flags().StringP("output", "o", "example.tf", "filename for Terraform output")
 }
 
@@ -280,4 +333,14 @@ func callApi[T any](response *T, serviceName string) error {
 		return err
 	}
 	return nil
+}
+
+func isAllContains(str string, slice []string) bool {
+	for _, item := range slice {
+		if !strings.Contains(str, item) {
+
+			return false
+		}
+	}
+	return true
 }
