@@ -13,15 +13,15 @@ func TestFilterSections(t *testing.T) {
 		name            string
 		services        []string
 		excludeServices []string
-		want            []Section
+		want            []string
 		expectErr       bool
 	}{
-		{name: "include 1 service", services: []string{"server"}, excludeServices: []string{}, want: []Section{{service: "Server"}}, expectErr: false},
-		{name: "include multiple services", services: []string{"server", "disk"}, excludeServices: []string{}, want: []Section{{service: "Server"}, {service: "Disk"}}, expectErr: false},
-		{name: "exclude 1 service", services: []string{}, excludeServices: []string{"server"}, want: []Section{{service: "Disk"}, {service: "Switch"}}, expectErr: false},
-		{name: "exclude multiple services", services: []string{}, excludeServices: []string{"server", "disk"}, want: []Section{{service: "Switch"}}, expectErr: false},
-		{name: "specify no service", services: []string{}, excludeServices: []string{}, want: []Section{{service: "Server"}, {service: "Disk"}, {service: "Switch"}}, expectErr: false},
-		{name: "specify service and exclude service", services: []string{"server"}, excludeServices: []string{"disk"}, want: []Section{}, expectErr: true},
+		{name: "include 1 service", services: []string{"server"}, excludeServices: []string{}, want: []string{"Server"}, expectErr: false},
+		{name: "include multiple services", services: []string{"server", "disk"}, excludeServices: []string{}, want: []string{"Server", "Disk"}, expectErr: false},
+		{name: "exclude 1 service", services: []string{}, excludeServices: []string{"server"}, want: []string{"Disk", "Switch"}, expectErr: false},
+		{name: "exclude multiple services", services: []string{}, excludeServices: []string{"server", "disk"}, want: []string{"Switch"}, expectErr: false},
+		{name: "specify no service", services: []string{}, excludeServices: []string{}, want: []string{"Server", "Disk", "Switch"}, expectErr: false},
+		{name: "specify service and exclude service", services: []string{"server"}, excludeServices: []string{"disk"}, want: []string{}, expectErr: true},
 	}
 
 	for _, tc := range tests {

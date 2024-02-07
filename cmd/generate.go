@@ -18,10 +18,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Section struct {
-	service string
-}
-
 type Resource struct {
 	Id   string
 	Type string
@@ -81,12 +77,12 @@ to quickly create a Cobra application.`,
 		var resources []Resource
 
 		for _, section := range sections {
-			if section.service == "Disk" {
+			if section == "Disk" {
 				if err = updateDatatableDisk(&resources); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-			} else if section.service == "Server" {
+			} else if section == "Server" {
 				if err = updateDatatableServer(&resources); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
@@ -133,27 +129,27 @@ func init() {
 	generateCmd.Flags().StringP("output", "o", "example.tf", "filename for Terraform output")
 }
 
-func getAllSections() []Section {
-	sections := []Section{}
-	sections = append(sections, Section{"Server"}, Section{"Disk"}, Section{"Switch"})
+func getAllSections() []string {
+	sections := []string{}
+	sections = append(sections, "Server", "Disk", "Switch")
 	return sections
 }
 
-func filterSections(services []string, excludeServices []string) ([]Section, error) {
-	sections := []Section{}
+func filterSections(services []string, excludeServices []string) ([]string, error) {
+	sections := []string{}
 	allSections := getAllSections()
 
 	if len(services) > 0 && len(excludeServices) > 0 {
 		return nil, errors.New("Please do not use --exclude-services and --services simultaneously")
 	} else if len(excludeServices) > 0 {
 		for _, section := range allSections {
-			if !slices.Contains(excludeServices, strings.ToLower(section.service)) {
+			if !slices.Contains(excludeServices, strings.ToLower(section)) {
 				sections = append(sections, section)
 			}
 		}
 	} else if len(services) > 0 {
 		for _, section := range allSections {
-			if slices.Contains(services, strings.ToLower(section.service)) {
+			if slices.Contains(services, strings.ToLower(section)) {
 				sections = append(sections, section)
 			}
 		}
