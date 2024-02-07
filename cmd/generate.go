@@ -24,12 +24,6 @@ type Resource struct {
 	Data Service
 }
 
-// type OutputResource struct {
-// 	Id   string
-// 	Type string
-// 	Data Service
-// }
-
 type TrackedResource struct {
 	ResourceName  string
 	TerraformType string
