@@ -94,8 +94,6 @@ to quickly create a Cobra application.`,
 			}
 		}
 
-		var outputResources []OutputResource
-
 		searchFilter, err := cmd.Flags().GetString("filter")
 
 		if err != nil {
@@ -103,54 +101,11 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
-		for _, resource := range resources {
-			if searchFilter == "" {
-				outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
-			} else if strings.Contains(searchFilter, ",") {
-				jsonResBytes, err := json.Marshal(resource)
+		outputResources, err := filterResource(searchFilter, &resources)
 
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-
-				jsonResString := string(jsonResBytes)
-
-				for _, searchTerm := range strings.Split(searchFilter, ",") {
-					if strings.Contains(jsonResString, searchTerm) {
-						outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
-						break
-					}
-				}
-
-			} else if strings.Contains(searchFilter, "&") {
-				jsonResBytes, err := json.Marshal(resource)
-
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-
-				jsonResString := string(jsonResBytes)
-
-				searchWords := strings.Split(searchFilter, "&")
-
-				if isAllContains(jsonResString, searchWords) {
-					outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
-				}
-			} else {
-				jsonResBytes, err := json.Marshal(resource)
-
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-
-				jsonResString := string(jsonResBytes)
-				if strings.Contains(jsonResString, searchFilter) {
-					outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
-				}
-			}
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		trackedResources := performMapping(outputResources)
@@ -332,6 +287,51 @@ func callApi[T any](response *T, serviceName string) error {
 		return err
 	}
 	return nil
+}
+
+func filterResource(searchFilter string, resources *[]Resource) ([]OutputResource, error) {
+	var outputResources []OutputResource
+
+	for _, resource := range *resources {
+		if searchFilter == "" {
+			outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+			return outputResources, nil
+		}
+
+		jsonResBytes, err := json.Marshal(resource)
+
+		if err != nil {
+			fmt.Println(err)
+			return nil, err
+		}
+
+		jsonResString := string(jsonResBytes)
+
+		if strings.Contains(searchFilter, ",") {
+
+			for _, searchTerm := range strings.Split(searchFilter, ",") {
+				if strings.Contains(jsonResString, searchTerm) {
+					outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+					break
+				}
+			}
+
+		} else if strings.Contains(searchFilter, "&") {
+
+			searchWords := strings.Split(searchFilter, "&")
+
+			if isAllContains(jsonResString, searchWords) {
+				outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+			}
+		} else {
+
+			jsonResString := string(jsonResBytes)
+			if strings.Contains(jsonResString, searchFilter) {
+				outputResources = append(outputResources, OutputResource{Id: resource.Id, Type: resource.Type, Data: resource.Data})
+			}
+		}
+	}
+	return outputResources, nil
 }
 
 func isAllContains(str string, slice []string) bool {
