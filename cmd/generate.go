@@ -97,7 +97,7 @@ to quickly create a Cobra application.`,
 		searchFilter, err := cmd.Flags().GetString("filter")
 
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error retrieving searchFilter:", err)
 			os.Exit(1)
 		}
 
