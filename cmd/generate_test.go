@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"reflect"
 	"slices"
 	"testing"
 )
@@ -36,5 +37,35 @@ func TestFilterSections(t *testing.T) {
 			t.Fatalf("%s: expected: %v, got: %v,", tc.name, tc.want, got)
 		}
 	}
+}
 
+func TestFilterResources(t *testing.T) {
+
+	server := Resource{Id: "example_server", Type: "server", Data: Server{ID: "123456781234", Name: "example_server", Tags: []string{"hoge"}}}
+	disk := Resource{Id: "example_disk", Type: "disk", Data: Disk{ID: "123456788765", Name: "example_disk"}}
+	resources := []Resource{
+		server, disk,
+	}
+	tests := []struct {
+		name         string
+		searchFilter string
+		resources    []Resource
+		want         []Resource
+	}{
+		{name: "no filter", searchFilter: "", resources: resources, want: resources},
+		{name: "1 searchWord", searchFilter: "hoge", resources: resources, want: []Resource{server}},
+		{name: "AND condition", searchFilter: "example&disk", resources: resources, want: []Resource{disk}},
+		{name: " OR condition", searchFilter: "server,disk", resources: resources, want: resources},
+	}
+
+	for _, tc := range tests {
+		got, err := filterResource(tc.searchFilter, &tc.resources)
+
+		if err != nil {
+			t.Fatalf("%s: expected: %v, got: %v,", tc.name, tc.want, got)
+		}
+		if !reflect.DeepEqual(tc.want, got) {
+			t.Fatalf("%s: expected: %v, got: %v,", tc.name, tc.want, got)
+		}
+	}
 }

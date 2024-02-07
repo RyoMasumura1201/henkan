@@ -288,12 +288,14 @@ func callApi[T any](response *T, serviceName string) error {
 func filterResource(searchFilter string, resources *[]Resource) ([]Resource, error) {
 	var outputResources []Resource
 
-	for _, resource := range *resources {
-		if searchFilter == "" {
+	if searchFilter == "" {
+		for _, resource := range *resources {
 			outputResources = append(outputResources, resource)
-			return outputResources, nil
 		}
+		return outputResources, nil
+	}
 
+	for _, resource := range *resources {
 		jsonResBytes, err := json.Marshal(resource)
 
 		if err != nil {
