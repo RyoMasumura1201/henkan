@@ -13,11 +13,13 @@ type DiskResponse struct {
 }
 
 type Disk struct {
-	ID         string   `json:"ID"`
-	Name       string   `json:"Name"`
-	SizeMB     int      `json:"SizeMB"`
-	Connection string   `json:"Connection"`
-	Plan       DiskPlan `json:"Plan"`
+	ID          string   `json:"ID"`
+	Name        string   `json:"Name"`
+	SizeMB      int      `json:"SizeMB"`
+	Connection  string   `json:"Connection"`
+	Plan        DiskPlan `json:"Plan"`
+	Description string   `json:"Description"`
+	Tags        []string `json:"Tags"`
 }
 
 type DiskPlan struct {
@@ -46,6 +48,8 @@ func (d Disk) ServiceMapping(trackedResources *[]TrackedResource) {
 	options["connector"] = d.Connection
 	options["size"] = d.SizeMB / 1024
 	options["plan"] = strings.ToLower(strings.Replace(d.Plan.Name, "プラン", "", -1))
+	options["description"] = d.Description
+	options["tags"] = d.Tags
 
 	returnValues := make(map[string]string)
 	returnValues["id"] = d.ID
