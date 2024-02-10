@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/sacloud/api-client-go/profile"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +36,13 @@ type Service interface {
 	ServiceMapping(trackedResources *[]TrackedResource)
 }
 
+type Config struct {
+	Profile           string
+	AccessToken       string
+	AccessTokenSecret string
+	Zone              string
+}
+
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -46,6 +54,13 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		config := Config{}
+		if err := config.loadFromProfile(); err != nil {
+			fmt.Println("Error load profile:", err)
+			os.Exit(1)
+		}
+
 		services, err := cmd.Flags().GetStringSlice("services")
 		if err != nil {
 			fmt.Println("Error retrieving services:", err)
@@ -72,12 +87,12 @@ to quickly create a Cobra application.`,
 
 		for _, section := range sections {
 			if section == "Disk" {
-				if err = updateDatatableDisk(&resources); err != nil {
+				if err = updateDatatableDisk(&resources, &config); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
 			} else if section == "Server" {
-				if err = updateDatatableServer(&resources); err != nil {
+				if err = updateDatatableServer(&resources, &config); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
@@ -245,19 +260,17 @@ func processTfParameter(k string, v any, trackedResources []TrackedResource) str
 	}
 }
 
-func callApi[T any](response *T, serviceName string) error {
+func callApi[T any](response *T, serviceName string, config *Config) error {
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/"+serviceName+"/", nil)
+	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/"+config.Zone+"/api/cloud/1.1/"+serviceName+"/", nil)
 
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
-	access_token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
-	access_token_secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
-	req.SetBasicAuth(access_token, access_token_secret)
+	req.SetBasicAuth(config.AccessToken, config.AccessTokenSecret)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -334,4 +347,24 @@ func isAllContains(str string, slice []string) bool {
 		}
 	}
 	return true
+}
+
+func (c *Config) loadFromProfile() error {
+
+	pcv := &profile.ConfigValue{}
+	if err := profile.Load(c.Profile, pcv); err != nil {
+		return fmt.Errorf("loading profile %q is failed: %s", c.Profile, err)
+	}
+
+	if c.AccessToken == "" {
+		c.AccessToken = pcv.AccessToken
+	}
+	if c.AccessTokenSecret == "" {
+		c.AccessTokenSecret = pcv.AccessTokenSecret
+	}
+	if c.Zone == "" && pcv.Zone != "" {
+		c.Zone = pcv.Zone
+	}
+
+	return nil
 }

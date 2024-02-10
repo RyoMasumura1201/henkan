@@ -37,11 +37,11 @@ type ServerInterfaceSwitch struct {
 	Scope string `json:"Scope"`
 }
 
-func updateDatatableServer(resources *[]Resource) error {
+func updateDatatableServer(resources *[]Resource, config *Config) error {
 
 	var serverResponse ServerResponse
 
-	if err := callApi(&serverResponse, "server"); err != nil {
+	if err := callApi(&serverResponse, "server", config); err != nil {
 		fmt.Println(err)
 		return err
 	}

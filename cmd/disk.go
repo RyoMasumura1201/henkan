@@ -26,11 +26,11 @@ type DiskPlan struct {
 	Name string `json:"Name"`
 }
 
-func updateDatatableDisk(resources *[]Resource) error {
+func updateDatatableDisk(resources *[]Resource, config *Config) error {
 
 	var diskResponse DiskResponse
 
-	if err := callApi(&diskResponse, "disk"); err != nil {
+	if err := callApi(&diskResponse, "disk", config); err != nil {
 		fmt.Println(err)
 		return err
 	}
