@@ -34,6 +34,7 @@ type ServerInterface struct {
 }
 
 type ServerInterfaceSwitch struct {
+	ID    string `json:"ID"`
 	Scope string `json:"Scope"`
 }
 
@@ -65,7 +66,12 @@ func (s Server) ServiceMapping(trackedResources *[]TrackedResource) {
 	options["disks"] = diskIds
 
 	networkInterface := make(map[string]string)
-	networkInterface["upstream"] = s.Interfaces[0].Switch.Scope
+	switch s.Interfaces[0].Switch.Scope {
+	case "shared":
+		networkInterface["upstream"] = s.Interfaces[0].Switch.Scope
+	case "user":
+		networkInterface["upstream"] = s.Interfaces[0].Switch.ID
+	}
 
 	options["network_interface"] = networkInterface
 
