@@ -27,7 +27,7 @@ func updateDatatableSwitch(resources *[]Resource, config *Config) error {
 	}
 
 	for _, switch_resource := range switchResponse.Switches {
-		*resources = append(*resources, Resource{Id: switch_resource.Name, Type: "switch", Data: switch_resource})
+		*resources = append(*resources, Resource{Id: switch_resource.Name, Data: switch_resource})
 	}
 	return nil
 }

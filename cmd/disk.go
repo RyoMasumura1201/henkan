@@ -35,7 +35,7 @@ func updateDatatableDisk(resources *[]Resource, config *Config) error {
 	}
 
 	for _, disk := range diskResponse.Disks {
-		*resources = append(*resources, Resource{Id: disk.Name, Type: "disk", Data: disk})
+		*resources = append(*resources, Resource{Id: disk.Name, Data: disk})
 	}
 	return nil
 }

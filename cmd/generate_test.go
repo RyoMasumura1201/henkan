@@ -41,8 +41,8 @@ func TestFilterSections(t *testing.T) {
 
 func TestFilterResources(t *testing.T) {
 
-	server := Resource{Id: "example_server", Type: "server", Data: Server{ID: "123456781234", Name: "example_server", Tags: []string{"hoge"}}}
-	disk := Resource{Id: "example_disk", Type: "disk", Data: Disk{ID: "123456788765", Name: "example_disk"}}
+	server := Resource{Id: "example_server", Data: Server{ID: "123456781234", Name: "example_server", Tags: []string{"hoge"}}}
+	disk := Resource{Id: "example_disk", Data: Disk{ID: "123456788765", Name: "example_disk"}}
 	resources := []Resource{
 		server, disk,
 	}
