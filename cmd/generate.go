@@ -86,17 +86,18 @@ to quickly create a Cobra application.`,
 		var resources []Resource
 
 		for _, section := range sections {
-			if section == "Disk" {
+			switch section {
+			case "Disk":
 				if err = updateDatatableDisk(&resources, &config); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-			} else if section == "Server" {
+			case "Server":
 				if err = updateDatatableServer(&resources, &config); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-			} else if section == "Switch" {
+			case "Switch":
 				if err = updateDatatableSwitch(&resources, &config); err != nil {
 					fmt.Println(err)
 					os.Exit(1)
