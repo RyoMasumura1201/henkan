@@ -96,6 +96,11 @@ to quickly create a Cobra application.`,
 					fmt.Println(err)
 					os.Exit(1)
 				}
+			} else if section == "Switch" {
+				if err = updateDatatableSwitch(&resources, &config); err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 			}
 		}
 
