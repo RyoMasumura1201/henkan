@@ -23,8 +23,7 @@ func updateDatatableSwitch(resources *[]Resource, config *Config) error {
 	var switchResponse SwitchResponse
 
 	if err := callApi(&switchResponse, "switch", config); err != nil {
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("failed to call sakuracloud api: %w", err)
 	}
 
 	for _, switch_resource := range switchResponse.Switches {

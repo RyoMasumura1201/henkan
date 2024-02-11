@@ -42,8 +42,7 @@ func updateDatatableServer(resources *[]Resource, config *Config) error {
 	var serverResponse ServerResponse
 
 	if err := callApi(&serverResponse, "server", config); err != nil {
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("failed to call sakuracloud api: %w", err)
 	}
 
 	for _, server := range serverResponse.Servers {

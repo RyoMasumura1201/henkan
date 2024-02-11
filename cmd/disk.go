@@ -31,8 +31,7 @@ func updateDatatableDisk(resources *[]Resource, config *Config) error {
 	var diskResponse DiskResponse
 
 	if err := callApi(&diskResponse, "disk", config); err != nil {
-		fmt.Println(err)
-		return err
+		return fmt.Errorf("failed to call sakuracloud api: %w", err)
 	}
 
 	for _, disk := range diskResponse.Disks {

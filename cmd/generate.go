@@ -77,11 +77,9 @@ to quickly create a Cobra application.`,
 		sections, err := filterSections(services, excludeServices)
 
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Failed to filter section", err)
 			os.Exit(1)
 		}
-
-		fmt.Println("Sections:", sections)
 
 		var resources []Resource
 
@@ -272,7 +270,6 @@ func callApi[T any](response *T, serviceName string, config *Config) error {
 	req, err := http.NewRequest("GET", "https://secure.sakura.ad.jp/cloud/zone/"+config.Zone+"/api/cloud/1.1/"+serviceName+"/", nil)
 
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
@@ -280,19 +277,16 @@ func callApi[T any](response *T, serviceName string, config *Config) error {
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
 	if err := json.Unmarshal(body, &response); err != nil {
-		fmt.Println(err)
 		return err
 	}
 	return nil
@@ -312,7 +306,6 @@ func filterResource(searchFilter string, resources *[]Resource) ([]Resource, err
 		jsonResBytes, err := json.Marshal(resource)
 
 		if err != nil {
-			fmt.Println(err)
 			return nil, err
 		}
 
@@ -348,7 +341,6 @@ func filterResource(searchFilter string, resources *[]Resource) ([]Resource, err
 func isAllContains(str string, slice []string) bool {
 	for _, item := range slice {
 		if !strings.Contains(str, item) {
-
 			return false
 		}
 	}
