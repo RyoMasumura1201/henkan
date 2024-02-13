@@ -99,6 +99,11 @@ to quickly create a Cobra application.`,
 					fmt.Println(err)
 					os.Exit(1)
 				}
+			case "Internet":
+				if err = updateDatatableInternet(&resources, &config); err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 			}
 		}
 
@@ -143,7 +148,7 @@ func init() {
 
 func getAllSections() []string {
 	sections := []string{}
-	sections = append(sections, "Server", "Disk", "Switch")
+	sections = append(sections, "Server", "Disk", "Switch", "Internet")
 	return sections
 }
 
