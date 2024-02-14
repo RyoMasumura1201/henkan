@@ -33,11 +33,11 @@ func updateDatatableSwitch(resources *[]Resource, config *Config) error {
 }
 
 func (s Switch) ServiceMapping(trackedResources *[]TrackedResource) {
-	options := make(map[string]any)
+	options := []TfParameter{}
 
-	options["name"] = s.Name
-	options["description"] = s.Description
-	options["tags"] = s.Tags
+	options = append(options, TfParameter{"name", s.Name})
+	options = append(options, TfParameter{"description", s.Description})
+	options = append(options, TfParameter{"tags", s.Tags})
 
 	returnValues := make(map[string]string)
 	returnValues["id"] = s.ID

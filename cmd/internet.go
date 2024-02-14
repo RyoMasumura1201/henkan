@@ -35,13 +35,13 @@ func updateDatatableInternet(resources *[]Resource, config *Config) error {
 }
 
 func (i Internet) ServiceMapping(trackedResources *[]TrackedResource) {
-	options := make(map[string]any)
+	options := []TfParameter{}
 
-	options["name"] = i.Name
-	options["description"] = i.Description
-	options["band_width"] = i.BandWidthMbps
-	options["netmask"] = i.NetworkMaskLen
-	options["tags"] = i.Tags
+	options = append(options, TfParameter{"name", i.Name})
+	options = append(options, TfParameter{"band_width", i.BandWidthMbps})
+	options = append(options, TfParameter{"netmask", i.NetworkMaskLen})
+	options = append(options, TfParameter{"description", i.Description})
+	options = append(options, TfParameter{"tags", i.Tags})
 
 	returnValues := make(map[string]string)
 	returnValues["id"] = i.ID

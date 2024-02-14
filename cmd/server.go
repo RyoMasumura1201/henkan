@@ -54,16 +54,10 @@ func updateDatatableServer(resources *[]Resource, config *Config) error {
 }
 
 func (s Server) ServiceMapping(trackedResources *[]TrackedResource) {
-	options := make(map[string]any)
-
-	options["name"] = s.Name
-	options["core"] = s.ServerPlan.CPU
-	options["memory"] = s.ServerPlan.MemoryMB / 1024
-	var diskIds []string
-	for _, disk := range s.Disks {
-		diskIds = append(diskIds, disk.Id)
-	}
-	options["disks"] = diskIds
+	options := []TfParameter{}
+	options = append(options, TfParameter{"name", s.Name})
+	options = append(options, TfParameter{"core", s.ServerPlan.CPU})
+	options = append(options, TfParameter{"memory", s.ServerPlan.MemoryMB / 1024})
 
 	networkInterface := make(map[string]string)
 	switch s.Interfaces[0].Switch.Scope {
@@ -72,16 +66,20 @@ func (s Server) ServiceMapping(trackedResources *[]TrackedResource) {
 	case "user":
 		networkInterface["upstream"] = s.Interfaces[0].Switch.ID
 	}
+	options = append(options, TfParameter{"network_interface", networkInterface})
 
-	options["network_interface"] = networkInterface
+	var diskIds []string
+	for _, disk := range s.Disks {
+		diskIds = append(diskIds, disk.Id)
+	}
+	options = append(options, TfParameter{"disks", diskIds})
 
 	diskEditParameter := make(map[string]string)
 	diskEditParameter["hostname"] = s.HostName
+	options = append(options, TfParameter{"disk_edit_parameter", diskEditParameter})
 
-	options["disk_edit_parameter"] = diskEditParameter
-
-	options["tags"] = s.Tags
-	options["description"] = s.Description
+	options = append(options, TfParameter{"description", s.Description})
+	options = append(options, TfParameter{"tags", s.Tags})
 
 	returnValues := make(map[string]string)
 	returnValues["id"] = s.ID

@@ -27,12 +27,17 @@ type Resource struct {
 type TrackedResource struct {
 	ResourceName  string
 	TerraformType string
-	Options       map[string]any
+	Options       []TfParameter
 	ReturnValues  map[string]string
 }
 
 type Service interface {
 	ServiceMapping(trackedResources *[]TrackedResource)
+}
+
+type TfParameter struct {
+	Key   string
+	Value any
 }
 
 type Config struct {
@@ -210,16 +215,16 @@ func outputMapTf(trackedResource TrackedResource, trackedResources []TrackedReso
 
 	var params string
 
-	for k, v := range trackedResource.Options {
-		switch v := v.(type) {
+	for _, option := range trackedResource.Options {
+		switch v := option.Value.(type) {
 		case map[string]string:
-			optionValue := processTfParameter(k, v, trackedResources)
+			optionValue := processTfParameter(option.Key, v, trackedResources)
 			params += fmt.Sprintf(`
-    %s %s`, k, optionValue)
+    %s %s`, option.Key, optionValue)
 		default:
-			optionValue := processTfParameter(k, v, trackedResources)
+			optionValue := processTfParameter(option.Key, v, trackedResources)
 			params += fmt.Sprintf(`
-    %s = %s`, k, optionValue)
+    %s = %s`, option.Key, optionValue)
 		}
 
 	}

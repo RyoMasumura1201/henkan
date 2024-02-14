@@ -41,14 +41,14 @@ func updateDatatableDisk(resources *[]Resource, config *Config) error {
 }
 
 func (d Disk) ServiceMapping(trackedResources *[]TrackedResource) {
-	options := make(map[string]any)
+	options := []TfParameter{}
 
-	options["name"] = d.Name
-	options["connector"] = d.Connection
-	options["size"] = d.SizeMB / 1024
-	options["plan"] = strings.ToLower(strings.Replace(d.Plan.Name, "プラン", "", -1))
-	options["description"] = d.Description
-	options["tags"] = d.Tags
+	options = append(options, TfParameter{"name", d.Name})
+	options = append(options, TfParameter{"plan", strings.ToLower(strings.Replace(d.Plan.Name, "プラン", "", -1))})
+	options = append(options, TfParameter{"size", d.SizeMB / 1024})
+	options = append(options, TfParameter{"connector", d.Connection})
+	options = append(options, TfParameter{"description", d.Description})
+	options = append(options, TfParameter{"tags", d.Tags})
 
 	returnValues := make(map[string]string)
 	returnValues["id"] = d.ID
