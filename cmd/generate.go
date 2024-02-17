@@ -142,7 +142,7 @@ func init() {
 	generateCmd.Flags().StringSliceP("services", "s", []string{}, "list of services to include (can be comma separated (default: ALL))")
 	generateCmd.Flags().StringSliceP("exclude-services", "e", []string{}, "list of services to exclude (can be comma separated)")
 	generateCmd.Flags().StringP("filter", "f", "", "search filter for discovered resources (can be comma separated)")
-	generateCmd.Flags().StringP("output", "o", "example.tf", "filename for Terraform output")
+	generateCmd.Flags().StringP("output", "o", "output.tf", "filename for Terraform output")
 }
 
 func getAllSections() []string {
