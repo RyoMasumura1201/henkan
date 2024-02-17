@@ -300,9 +300,7 @@ func filterResource(searchFilter string, resources *[]Resource) ([]Resource, err
 	var outputResources []Resource
 
 	if searchFilter == "" {
-		for _, resource := range *resources {
-			outputResources = append(outputResources, resource)
-		}
+		outputResources = append(outputResources, *resources...)
 		return outputResources, nil
 	}
 
