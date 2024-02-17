@@ -19,9 +19,9 @@ func TestFilterSections(t *testing.T) {
 	}{
 		{name: "include 1 service", services: []string{"server"}, excludeServices: []string{}, want: []string{"Server"}, expectErr: false},
 		{name: "include multiple services", services: []string{"server", "disk"}, excludeServices: []string{}, want: []string{"Server", "Disk"}, expectErr: false},
-		{name: "exclude 1 service", services: []string{}, excludeServices: []string{"server"}, want: []string{"Disk", "Switch"}, expectErr: false},
-		{name: "exclude multiple services", services: []string{}, excludeServices: []string{"server", "disk"}, want: []string{"Switch"}, expectErr: false},
-		{name: "specify no service", services: []string{}, excludeServices: []string{}, want: []string{"Server", "Disk", "Switch"}, expectErr: false},
+		{name: "exclude 1 service", services: []string{}, excludeServices: []string{"server"}, want: []string{"Disk", "Switch", "Internet"}, expectErr: false},
+		{name: "exclude multiple services", services: []string{}, excludeServices: []string{"server", "disk"}, want: []string{"Switch", "Internet"}, expectErr: false},
+		{name: "specify no service", services: []string{}, excludeServices: []string{}, want: []string{"Server", "Disk", "Switch", "Internet"}, expectErr: false},
 		{name: "specify service and exclude service", services: []string{"server"}, excludeServices: []string{"disk"}, want: []string{}, expectErr: true},
 	}
 
