@@ -48,7 +48,7 @@ type Config struct {
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
-	Use:   "generate Terraform template",
+	Use:   "henkan",
 	Short: "Generate Terraform template from your existiong SAKURA Cloud",
 	Long:  `Generate Terraform template from your existiong SAKURA Cloud`,
 	Run: func(cmd *cobra.Command, args []string) {

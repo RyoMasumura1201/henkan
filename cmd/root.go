@@ -10,9 +10,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "henkan",
-	Short: "Generate Terraform templates from your existiong SAKURA Cloud",
-	Long:  `henkan is the CLI tool for generating terraform templates from your existiong SAKURA Cloud.`,
+	Use:   "henkan [global options] <command> <sub-command> [options]",
+	Short: "henkan is CLI for generate Terraform templates from your existiong SAKURA Cloud resources",
+	Long:  `CLI for generate terraform templates from your existiong SAKURA Cloud resources`,
 }
 
 func Execute() {
