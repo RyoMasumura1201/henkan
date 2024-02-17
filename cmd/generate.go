@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -157,7 +156,7 @@ func filterSections(services []string, excludeServices []string) ([]string, erro
 	allSections := getAllSections()
 
 	if len(services) > 0 && len(excludeServices) > 0 {
-		return nil, errors.New("Please do not use --exclude-services and --services simultaneously")
+		return nil, fmt.Errorf("please do not use --exclude-services and --services simultaneously")
 	} else if len(excludeServices) > 0 {
 		for _, section := range allSections {
 			if !slices.Contains(excludeServices, strings.ToLower(section)) {
