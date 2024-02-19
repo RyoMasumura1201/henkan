@@ -73,7 +73,6 @@ func TestFilterResources(t *testing.T) {
 func TestOutputMapTf(t *testing.T) {
 
 	server := TrackedResource{ResourceName: "example_server", TerraformType: "sakuracloud_server", Options: []TfParameter{{Key: "name", Value: "example_server"}}}
-	// disk := Resource{Id: "example_disk", Data: Disk{ID: "123456788765", Name: "example_disk"}}
 
 	tests := []struct {
 		name             string

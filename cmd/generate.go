@@ -151,6 +151,7 @@ func getAllSections() []string {
 	return sections
 }
 
+// Filtering the search service
 func filterSections(services []string, excludeServices []string) ([]string, error) {
 	sections := []string{}
 	allSections := getAllSections()
@@ -184,6 +185,7 @@ func performMapping(outputResources []Resource) []TrackedResource {
 	return trackedResources
 }
 
+// Output Terraform template
 func compileOutputs(trackedResources []TrackedResource) string {
 	compiled := `terraform {
     required_providers {
@@ -267,6 +269,7 @@ func processTfParameter(k string, v any, trackedResources []TrackedResource) str
 	}
 }
 
+// Retrieve Existing Resources by Making a Request to the SAKURA Cloud API
 func callApi[T any](response *T, serviceName string, config *Config) error {
 	client := &http.Client{}
 
@@ -295,6 +298,7 @@ func callApi[T any](response *T, serviceName string, config *Config) error {
 	return nil
 }
 
+// Filtering the Output Resources
 func filterResource(searchFilter string, resources *[]Resource) ([]Resource, error) {
 	var outputResources []Resource
 
@@ -339,6 +343,7 @@ func filterResource(searchFilter string, resources *[]Resource) ([]Resource, err
 	return outputResources, nil
 }
 
+// Check if the Slice Contains an Element with the Specified String
 func isAllContains(str string, slice []string) bool {
 	for _, item := range slice {
 		if !strings.Contains(str, item) {
@@ -348,6 +353,7 @@ func isAllContains(str string, slice []string) bool {
 	return true
 }
 
+// Load SAKURA Cloud Profile from usacloud config file
 func (c *Config) loadFromProfile() error {
 
 	pcv := &profile.ConfigValue{}
