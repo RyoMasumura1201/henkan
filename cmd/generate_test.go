@@ -69,3 +69,29 @@ func TestFilterResources(t *testing.T) {
 		}
 	}
 }
+
+func TestOutputMapTf(t *testing.T) {
+
+	server := TrackedResource{ResourceName: "example_server", TerraformType: "sakuracloud_server", Options: []TfParameter{{Key: "name", Value: "example_server"}}}
+	// disk := Resource{Id: "example_disk", Data: Disk{ID: "123456788765", Name: "example_disk"}}
+
+	tests := []struct {
+		name             string
+		trackedResource  TrackedResource
+		trackedResources []TrackedResource
+		want             string
+	}{
+		{name: "string option", trackedResource: server, trackedResources: []TrackedResource{server}, want: `
+resource "sakuracloud_server" "example_server" {
+    name = "example_server"
+}`},
+	}
+
+	for _, tc := range tests {
+		got := outputMapTf(tc.trackedResource, tc.trackedResources)
+
+		if tc.want != got {
+			t.Fatalf("%s: expected: %v, got: %v,", tc.name, tc.want, got)
+		}
+	}
+}
