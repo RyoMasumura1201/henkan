@@ -48,7 +48,7 @@ type Config struct {
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
-	Use:   "henkan",
+	Use:   "generate",
 	Short: "Generate Terraform template from your existiong SAKURA Cloud",
 	Long:  `Generate Terraform template from your existiong SAKURA Cloud`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -214,11 +214,11 @@ func outputMapTf(trackedResource TrackedResource, trackedResources []TrackedReso
 	for _, option := range trackedResource.Options {
 		switch v := option.Value.(type) {
 		case map[string]string:
-			optionValue := processTfParameter(option.Key, v, trackedResources)
+			optionValue := processTfParameter(4, option.Key, v, trackedResources)
 			params += fmt.Sprintf(`
     %s %s`, option.Key, optionValue)
 		default:
-			optionValue := processTfParameter(option.Key, v, trackedResources)
+			optionValue := processTfParameter(4, option.Key, v, trackedResources)
 			params += fmt.Sprintf(`
     %s = %s`, option.Key, optionValue)
 		}
@@ -232,7 +232,7 @@ resource "%s" "%s" {%s
 	return output
 }
 
-func processTfParameter(k string, v any, trackedResources []TrackedResource) string {
+func processTfParameter(spacing int, k string, v any, trackedResources []TrackedResource) string {
 	var paramItems []string
 	switch v := v.(type) {
 	case string:
@@ -251,18 +251,18 @@ func processTfParameter(k string, v any, trackedResources []TrackedResource) str
 		return strconv.Itoa(v)
 	case []string:
 		for _, param := range v {
-			paramItems = append(paramItems, processTfParameter(k, param, trackedResources))
+			paramItems = append(paramItems, processTfParameter(spacing+4, k, param, trackedResources))
 		}
 		return "[" + strings.Join(paramItems, ",") + "]"
 	case map[string]string:
 		for key, value := range v {
-			subValue := processTfParameter(key, value, trackedResources)
+			subValue := processTfParameter(spacing+4, key, value, trackedResources)
 			paramItems = append(paramItems, key+" = "+subValue)
 		}
 		return `{
-        ` + strings.Join(paramItems, `
-        `) + `
-    }`
+` + strings.Repeat(" ", spacing+4) + strings.Join(paramItems, `
+`+strings.Repeat(" ", spacing+4)) + `
+` + strings.Repeat(" ", spacing) + `}`
 
 	default:
 		return "" //[TODO]
