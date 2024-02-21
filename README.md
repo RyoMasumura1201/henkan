@@ -9,7 +9,7 @@ Generate Terraform templates from your existiong SAKURA Cloud resources(Inspired
 The `generate` command will generate Terraform template from all discovered resources and write them to the filename specified.
 
 ```
-henakn generate \
+henkan generate \
   --output "terraform.hcl" \
   --filter "myapp" \
   --services "server"
