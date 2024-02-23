@@ -72,7 +72,8 @@ func TestFilterResources(t *testing.T) {
 
 func TestOutputMapTf(t *testing.T) {
 
-	server := TrackedResource{ResourceName: "example_server", TerraformType: "sakuracloud_server", Options: []TfParameter{{Key: "name", Value: "example_server"}}}
+	server := TrackedResource{ResourceName: "example_server", TerraformType: "sakuracloud_server", Options: []TfParameter{{Key: "name", Value: "example_server"}, {Key: "core", Value: 1}, {Key: "network_interface", Value: map[string]string{"upstream": "shared"}}, {Key: "disks", Value: []string{"12345678"}}}}
+	disk := TrackedResource{ResourceName: "example_disk", TerraformType: "sakuracloud_disk", Options: []TfParameter{{Key: "name", Value: "example_disk"}}, ReturnValues: map[string]string{"id": "12345678"}}
 
 	tests := []struct {
 		name             string
@@ -80,9 +81,23 @@ func TestOutputMapTf(t *testing.T) {
 		trackedResources []TrackedResource
 		want             string
 	}{
-		{name: "string option", trackedResource: server, trackedResources: []TrackedResource{server}, want: `
+		{name: "output resource", trackedResource: server, trackedResources: []TrackedResource{server}, want: `
 resource "sakuracloud_server" "example_server" {
     name = "example_server"
+    core = 1
+    network_interface {
+        upstream = "shared"
+    }
+    disks = ["12345678"]
+}`},
+		{name: "output relevant resource", trackedResource: server, trackedResources: []TrackedResource{server, disk}, want: `
+resource "sakuracloud_server" "example_server" {
+    name = "example_server"
+    core = 1
+    network_interface {
+        upstream = "shared"
+    }
+    disks = [sakuracloud_disk.example_disk.id]
 }`},
 	}
 
