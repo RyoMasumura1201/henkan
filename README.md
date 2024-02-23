@@ -2,6 +2,10 @@
 
 Generate Terraform templates from your existiong SAKURA Cloud resources(Inspired by [former2](https://github.com/iann0036/former2))
 
+## Installation
+
+You can download from ownload and extract files for your own platform from [GitHub Releases](https://github.com/RyoMasumura1201/henkan/releases)
+
 ## Usage
 
 ### generate
