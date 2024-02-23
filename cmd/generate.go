@@ -55,27 +55,27 @@ var generateCmd = &cobra.Command{
 
 		config := Config{}
 		if err := config.loadFromProfile(); err != nil {
-			fmt.Println("Error load profile:", err)
+			fmt.Println("failed to load profile:", err)
 			os.Exit(1)
 		}
 
 		services, err := cmd.Flags().GetStringSlice("services")
 		if err != nil {
-			fmt.Println("Error retrieving services:", err)
+			fmt.Println("failed to retrieve services:", err)
 			os.Exit(1)
 		}
 
 		excludeServices, err := cmd.Flags().GetStringSlice("exclude-services")
 
 		if err != nil {
-			fmt.Println("Error retrieving exclude services:", err)
+			fmt.Println("failed to retrieve exclude services:", err)
 			os.Exit(1)
 		}
 
 		sections, err := filterSections(services, excludeServices)
 
 		if err != nil {
-			fmt.Println("Failed to filter section", err)
+			fmt.Println("failed to filter section", err)
 			os.Exit(1)
 		}
 
@@ -109,7 +109,7 @@ var generateCmd = &cobra.Command{
 		searchFilter, err := cmd.Flags().GetString("filter")
 
 		if err != nil {
-			fmt.Println("Error retrieving searchFilter:", err)
+			fmt.Println("failed to retrieving searchFilter:", err)
 			os.Exit(1)
 		}
 
@@ -126,7 +126,7 @@ var generateCmd = &cobra.Command{
 		output, err := cmd.Flags().GetString("output")
 
 		if err != nil {
-			fmt.Println("Error retrieving output:", err)
+			fmt.Println("failed to retrieve output:", err)
 			os.Exit(1)
 		}
 		if err = os.WriteFile(output, []byte(mappedOutputs), 0666); err != nil {
@@ -207,6 +207,7 @@ provider "sakuracloud" {
 	return compiled
 }
 
+// Output terraform resource
 func outputMapTf(trackedResource TrackedResource, trackedResources []TrackedResource) string {
 
 	var params string
