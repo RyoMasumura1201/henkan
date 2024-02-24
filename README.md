@@ -4,7 +4,7 @@ Generate Terraform templates from your existiong SAKURA Cloud resources(Inspired
 
 ## Installation
 
-You can download from ownload and extract files for your own platform from [GitHub Releases](https://github.com/RyoMasumura1201/henkan/releases)
+You can download and extract files for your own platform from [GitHub Releases](https://github.com/RyoMasumura1201/henkan/releases)
 
 ## Usage
 
