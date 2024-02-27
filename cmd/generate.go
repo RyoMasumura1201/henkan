@@ -270,7 +270,7 @@ func processTfParameter(spacing int, k string, v any, trackedResources []Tracked
 	}
 }
 
-// Retrieve Existing Resources by Making a Request to the SAKURA Cloud API
+// Retrieve Existing Resources by Making a Request to the SAKURA Cloud API[TODO: Change to using library]
 func callApi[T any](response *T, serviceName string, config *Config) error {
 	client := &http.Client{}
 
